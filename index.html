@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#07192c">
-  <meta name="description" content="Мирзомамадова С. М. — юрист. Онлайн-консультации, договоры, претензии, жалобы и судебные документы.">
+  <meta name="description" content="Мирзомамадова С. М. — юрист. Онлайн-консультации, очные встречи при необходимости, договоры, претензии, жалобы и судебные документы.">
   <title>Мирзомамадова С. М. — юрист</title>
   <style>
     :root{--ink:#07192c;--ink2:#10263d;--paper:#f4f0e7;--paper2:#e9e1d2;--gold:#b9954f;--text:#16212c;--muted:#68717a;--white:#fffdf7}
@@ -28,6 +28,10 @@
     h1{max-width:680px;margin:0;font-family:Georgia,"Times New Roman",serif;font-size:clamp(58px,6.5vw,92px);font-weight:400;letter-spacing:-.05em;line-height:.92}
     .hero-bottom{display:grid;grid-template-columns:1fr;align-items:start;gap:28px;margin-top:54px;padding-top:26px;border-top:1px solid rgba(185,149,79,.5)}
     .hero-bottom p{margin:0;color:rgba(255,253,247,.72);font-size:18px;line-height:1.65}
+    .hero-copy{display:grid;gap:18px}
+    .meeting-note{display:flex;align-items:center;gap:12px;width:max-content;max-width:100%;box-sizing:border-box;padding:11px 15px;border-left:2px solid var(--gold);background:rgba(185,149,79,.09);color:rgba(255,253,247,.78);font-size:14px;line-height:1.4}
+    .meeting-note:before{content:"";width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:var(--gold)}
+    .meeting-note strong{color:var(--gold);font-weight:700}
     .button{display:inline-flex;align-items:center;justify-content:space-between;justify-self:start;gap:40px;min-width:230px;padding:19px 22px;border:1px solid var(--gold);background:var(--gold);color:var(--ink);font-size:14px;font-weight:700;transition:.18s}
     .button:hover,.button:focus-visible{background:transparent;color:var(--white)}
     .hero-word{position:absolute;right:-28px;bottom:-36px;color:rgba(255,255,255,.025);font-size:clamp(150px,22vw,330px);font-weight:700;letter-spacing:-.08em;line-height:.8;pointer-events:none}
@@ -94,7 +98,10 @@
         <div class="eyebrow">Онлайн-консультации</div>
         <h1>Мирзомамадова<br>С. М.</h1>
         <div class="hero-bottom">
-          <p>Юридическая помощь для граждан и бизнеса: консультации, договоры и подготовка правовых документов.</p>
+          <div class="hero-copy">
+            <p>Юридическая помощь для граждан и бизнеса: консультации, договоры и подготовка правовых документов.</p>
+            <div class="meeting-note">Очная консультация — <strong>при необходимости</strong></div>
+          </div>
           <a class="button" href="#contacts">Обсудить вопрос <span aria-hidden="true">↗</span></a>
         </div>
       </div>
