@@ -282,6 +282,80 @@
     .step h3 { margin: 0 0 13px; font-family: var(--serif); font-size: 27px; font-weight: 400; line-height: 1.1; }
     .step p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.65; }
 
+    .contacts {
+      position: relative;
+      overflow: hidden;
+      padding: 116px 0 124px;
+      background: var(--navy);
+      color: var(--white);
+    }
+    .contacts::after {
+      content: "";
+      position: absolute;
+      right: -190px;
+      bottom: -250px;
+      width: 520px;
+      aspect-ratio: 1;
+      border: 1px solid rgba(199, 166, 104, .1);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .contact-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(300px, .82fr) minmax(440px, 1.18fr);
+      gap: 88px;
+      align-items: end;
+    }
+    .contact-copy h2 { margin-top: 31px; }
+    .contact-copy p:last-child {
+      max-width: 470px;
+      margin: 30px 0 0;
+      color: rgba(255, 253, 248, .66);
+      font-size: 16px;
+      line-height: 1.7;
+    }
+    .contact-card {
+      padding: 30px 0 5px;
+      border-top: 1px solid rgba(199, 166, 104, .55);
+    }
+    .contact-caption {
+      margin: 0 0 13px;
+      color: rgba(255, 253, 248, .5);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .contact-phone {
+      display: inline-block;
+      font-family: var(--serif);
+      font-size: clamp(38px, 4.35vw, 62px);
+      font-weight: 400;
+      letter-spacing: -.035em;
+      line-height: 1.05;
+    }
+    .contact-phone:hover { color: var(--gold); }
+    .contact-actions { display: flex; gap: 12px; margin-top: 32px; }
+    .contact-action {
+      display: inline-flex;
+      min-height: 56px;
+      flex: 1;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+      padding: 15px 19px;
+      border: 1px solid rgba(199, 166, 104, .72);
+      color: var(--white);
+      font-size: 14px;
+      font-weight: 700;
+      transition: background-color .2s ease, color .2s ease;
+    }
+    .contact-action:first-child { background: var(--gold); color: var(--navy); }
+    .contact-action:hover,
+    .contact-action:focus-visible { background: var(--white); color: var(--navy); }
+
     footer { padding: 29px 0; background: #04111d; color: rgba(255, 253, 248, .58); font-size: 12px; }
     .footer { display: flex; align-items: center; justify-content: space-between; gap: 30px; }
     .footer p { margin: 0; }
@@ -323,6 +397,9 @@
       .step { min-height: 0; padding: 27px 22px 30px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
       .step:last-child { border-bottom: 0; }
       .step-num { margin-bottom: 34px; }
+      .contacts { padding-block: 90px; }
+      .contact-grid { grid-template-columns: 1fr; gap: 52px; }
+      .contact-copy p:last-child { max-width: 580px; }
     }
 
     @media (max-width: 620px) {
@@ -348,6 +425,10 @@
       .profile-text .profile-lead { font-size: 25px; }
       .process { padding-block: 76px; }
       .process-head { margin-bottom: 44px; }
+      .contacts { padding-block: 76px; }
+      .contact-grid { gap: 44px; }
+      .contact-actions { flex-direction: column; }
+      .contact-phone { font-size: clamp(34px, 10.6vw, 48px); }
       .footer { align-items: flex-start; flex-direction: column; gap: 13px; }
     }
 
@@ -368,7 +449,7 @@
         <nav class="nav" aria-label="Основная навигация">
           <a class="nav-link" href="#profile">Обо мне</a>
           <a class="nav-link" href="#process">Порядок работы</a>
-          <a class="nav-link header-cta" href="#services">Услуги</a>
+          <a class="nav-link header-cta" href="#contacts">Связаться</a>
         </nav>
       </header>
 
@@ -442,6 +523,24 @@
           <li class="step"><span class="step-num">02</span><h3>Мы согласуем задачу</h3><p>Определяем, что именно нужно сделать; я называю стоимость и срок.</p></li>
           <li class="step"><span class="step-num">03</span><h3>Я выполняю работу</h3><p>Провожу консультацию, готовлю документ или помогаю с электронным сервисом.</p></li>
         </ol>
+      </div>
+    </section>
+
+    <section class="contacts" id="contacts" aria-labelledby="contacts-title">
+      <div class="contact-grid shell">
+        <div class="contact-copy">
+          <p class="section-label">Контакты</p>
+          <h2 id="contacts-title">Связаться</h2>
+          <p>Позвоните или напишите в WhatsApp или Telegram.</p>
+        </div>
+        <div class="contact-card" aria-label="Телефон и мессенджеры">
+          <p class="contact-caption">Телефон</p>
+          <a class="contact-phone" href="tel:+79014381255">+7 (901) 438-12-55</a>
+          <div class="contact-actions">
+            <a class="contact-action" href="https://wa.me/79014381255" target="_blank" rel="noopener noreferrer"><span>WhatsApp</span><span aria-hidden="true">↗</span></a>
+            <a class="contact-action" href="https://t.me/+79014381255?profile" target="_blank" rel="noopener noreferrer"><span>Telegram</span><span aria-hidden="true">↗</span></a>
+          </div>
+        </div>
       </div>
     </section>
   </main>
