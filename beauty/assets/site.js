@@ -26,10 +26,10 @@ if(filters){
 const dialog=document.querySelector('.lightbox');
 const source=document.querySelector('#photos-data');
 if(dialog&&source&&typeof dialog.showModal==='function'){
-  const photos=JSON.parse(source.textContent);
-  let current=0;
-  const display=index=>{current=(index+photos.length)%photos.length;const photo=photos[current];const img=document.querySelector('#photo-full');img.src=photo.src;img.alt=photo.title+' — работа мастера';document.querySelector('#photo-title').textContent=photo.title;document.querySelector('#photo-counter').textContent=`${current+1} / ${photos.length}`;};
-  document.querySelectorAll('[data-photo]').forEach(link=>link.addEventListener('click',e=>{e.preventDefault();display(Number(link.dataset.photo));dialog.showModal();document.body.style.overflow='hidden';}));
+  const works=JSON.parse(source.textContent);
+  let current=0,work=works[0];
+  const display=index=>{current=(index+work.photos.length)%work.photos.length;const photo=work.photos[current];const img=document.querySelector('#photo-full');img.src=photo.src+'?v=2';img.alt=work.title+' — фото '+(current+1);document.querySelector('#photo-title').textContent=work.title;document.querySelector('#photo-counter').textContent=`Фото ${current+1} / ${work.photos.length}`;document.querySelector('#photo-prev').hidden=work.photos.length<2;document.querySelector('#photo-next').hidden=work.photos.length<2;};
+  document.querySelectorAll('[data-work]').forEach(link=>link.addEventListener('click',e=>{e.preventDefault();work=works[Number(link.dataset.work)];display(Number(link.dataset.photo));dialog.showModal();document.body.style.overflow='hidden';}));
   document.querySelector('#photo-close').addEventListener('click',()=>dialog.close());
   document.querySelector('#photo-prev').addEventListener('click',()=>display(current-1));
   document.querySelector('#photo-next').addEventListener('click',()=>display(current+1));
