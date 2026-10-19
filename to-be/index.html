@@ -5,18 +5,18 @@
   <meta name="theme-color" content="#3654ed"><meta name="referrer" content="no-referrer">
   <meta name="description" content="Практика to be на вторник и среду: по 15 минут. Местоимения, am / is / are, знакомые слова и отчёт преподавателю в Telegram.">
   <title>To be · Вторник и среда</title>
-  <link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./styles.css?v=3"><link rel="stylesheet" href="./daily.css?v=3">
-  <script src="./config.js" defer></script><script type="module" src="./daily.mjs?v=3"></script>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./styles.css?v=4"><link rel="stylesheet" href="./daily.css?v=4">
+  <script src="./config.js" defer></script><script type="module" src="./daily.mjs?v=4"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">К содержимому</a>
-  <header class="header"><a class="brand" href="./" aria-label="To be — план занятий"><span class="brand-icon" aria-hidden="true">be</span><span>АНГЛИЙСКИЙ</span></a><span class="course-caption">Местоимения и to be</span><nav class="top-nav" aria-label="Дни практики"><button type="button" data-home>План</button><button type="button" data-open-day="1">Вторник</button><button type="button" data-open-day="2">Среда</button></nav></header>
+  <header class="header"><a class="brand" href="./" aria-label="To be — план занятий"><span class="brand-icon" aria-hidden="true">be</span><span>Английский</span></a><span class="course-caption">Местоимения и to be</span><nav class="top-nav" aria-label="Дни практики"><button type="button" data-home>План</button><button type="button" data-open-day="1">Вторник</button><button type="button" data-open-day="2">Среда</button></nav></header>
   <main id="main" tabindex="-1">
     <section id="hub" aria-labelledby="hub-title">
-      <div class="page-heading"><div><p class="eyebrow">ПОДГОТОВКА К ЧЕТВЕРГУ, 22 ОКТЯБРЯ</p><h1 id="hub-title" tabindex="-1">To be: am, is, are</h1><p id="hub-greeting" class="section-description"></p></div><span class="completion-count"><strong id="days-done">0 / 2</strong><span>дня выполнено</span></span></div>
+      <div class="page-heading"><div><p class="eyebrow">Занятие в четверг, 22 октября</p><h1 id="hub-title" tabindex="-1">To be: am, is, are</h1><p id="hub-greeting" class="section-description"></p></div><span class="completion-count"><strong id="days-done">0 / 2</strong><span>дня выполнено</span></span></div>
       <div id="day-grid" class="day-grid"></div>
       <div class="plan-bottom"><div><h2>Что нужно запомнить</h2><div class="form-groups"><p><span lang="en">I</span><b lang="en">am</b></p><p><span lang="en">he / she / it</span><b lang="en">is</b></p><p><span lang="en">you / we / they</span><b lang="en">are</b></p></div></div><div class="send-note"><h2>После каждого дня</h2><p>Открой готовый отчёт, нажми «Открыть Telegram», затем «Отправить» в диалоге <b>@sitoshik</b>.</p><p class="small-note">Сообщение отправляешь ты. Сайт не отправляет его автоматически.</p></div></div>
-      <div id="course-end" class="course-end" hidden><h2>Вторник и среда выполнены</h2><p>В четверг, 22 октября, покажи преподавателю, как выбираешь am, is и are. Подготовь вопросы по ошибкам.</p></div>
+      <div id="course-end" class="course-end" hidden><h2>Оба дня выполнены</h2><p>На занятии в четверг разберём ошибки и потренируем предложения вслух.</p></div>
       <p id="storage-note" class="small-note" role="status"></p>
     </section>
 
@@ -24,8 +24,8 @@
       <div class="page-heading"><div><p id="lesson-counter" class="eyebrow"></p><h1 id="lesson-title" tabindex="-1"></h1><p id="lesson-description" class="section-description"></p></div><span id="lesson-count" class="step-count"></span></div>
       <nav id="lesson-route" class="steps" aria-label="Что повторить"></nav>
       <div id="lesson-content" class="lesson-content"></div>
-      <div id="yesterday-review" class="yesterday-review" hidden><h2>Повтори ошибки вторника</h2><p>Назови ответ сама, затем открой объяснение.</p><div id="review-flashcards"></div></div>
-      <div class="page-actions"><button id="lesson-previous" class="button secondary" type="button">← Назад</button><span class="small-note">На повторение — около 3 минут</span><button id="lesson-next" class="button primary" type="button">Дальше →</button></div>
+      <div id="yesterday-review" class="yesterday-review" hidden><h2>Задания, в которых были ошибки</h2><p>Попробуй ответить ещё раз. Нажми на вопрос, чтобы посмотреть правильный ответ.</p><div id="review-flashcards"></div></div>
+      <div class="page-actions"><button id="lesson-previous" class="button secondary" type="button">Назад</button><span class="small-note">На повторение — около 3 минут</span><button id="lesson-next" class="button primary" type="button">Дальше</button></div>
     </section>
 
     <section id="exercise" hidden aria-labelledby="section-title">
@@ -33,29 +33,29 @@
       <nav id="steps" class="steps" aria-label="Разделы заданий"></nav>
       <div class="page-heading"><div><p id="section-counter" class="eyebrow"></p><h1 id="section-title" tabindex="-1"></h1><p id="quiz-description" class="section-description"></p></div><span class="completion-count"><strong id="answered-count"></strong><span>проверено</span></span></div>
       <form id="exercise-form" novalidate>
+        <div id="question-example" class="exercise-example"><h2>Пример</h2><p id="question-example-text"></p></div>
         <div id="question-list"></div>
-        <details id="question-example" class="example-help"><summary>Посмотреть образец выполнения</summary><p id="question-example-text"></p></details>
         <div id="answer-feedback" class="answer-feedback" role="status" hidden></div>
-        <details id="quiz-rule" class="rule"><summary>Нужна подсказка: местоимения и формы</summary><div id="quiz-rule-content" class="rule-content"></div></details>
-        <section id="personal-section" class="personal-section" hidden><h2>Дополнительно — про себя</h2><label for="personal" id="personal-label"></label><textarea id="personal" rows="3" maxlength="600" placeholder="Твои предложения на английском…"></textarea><p class="small-note">Необязательно. Преподаватель проверит эти предложения отдельно; в балл они не входят.</p></section>
+        <details id="quiz-rule" class="rule"><summary>Посмотреть таблицу am, is, are</summary><div id="quiz-rule-content" class="rule-content"></div></details>
+        <section id="personal-section" class="personal-section" hidden><h2>Напиши о себе</h2><label for="personal" id="personal-label"></label><textarea id="personal" rows="3" maxlength="600" placeholder="Твои предложения на английском…"></textarea><p id="personal-note" class="small-note"></p></section>
         <p id="validation-error" class="error-text" role="alert"></p>
-        <div class="page-actions"><button id="previous" class="button secondary" type="button">← Назад</button><span id="step-note" class="small-note"></span><button id="next" class="button primary" type="submit">Проверить ответ</button></div>
+        <div class="page-actions"><button id="previous" class="button secondary" type="button">Назад</button><span id="step-note" class="small-note"></span><button id="next" class="button primary" type="submit">Проверить ответ</button></div>
       </form>
     </section>
 
     <section id="result" hidden aria-labelledby="result-title">
-      <div class="page-heading"><div><p id="result-day" class="eyebrow"></p><h1 id="result-title" tabindex="-1">Практика выполнена</h1><p id="result-message" class="section-description"></p></div><span class="result-score"><strong id="score-value"></strong><span>с первой проверки</span></span></div>
+      <div class="page-heading"><div><p id="result-day" class="eyebrow"></p><h1 id="result-title" tabindex="-1">Задания выполнены</h1><p id="result-message" class="section-description"></p></div><span class="result-score"><strong id="score-value"></strong><span>с первой проверки</span></span></div>
       <div id="score-breakdown" class="score-breakdown"></div>
-      <div class="delivery-box"><div><p class="eyebrow">ПОСЛЕДНИЙ ШАГ</p><h2>Отправь результат преподавателю</h2><p>Нажми кнопку. В Telegram откроется диалог <b>@sitoshik</b> с готовым сообщением. Нажми там <b>«Отправить»</b>.</p><p id="telegram-status" class="small-note" role="status">Сайт не видит, доставлено ли сообщение.</p></div><a id="telegram-link" class="button primary" target="_blank" rel="noopener noreferrer">Открыть Telegram ↗</a></div>
+      <div class="delivery-box"><div><h2>Отправь результат преподавателю</h2><p>Нажми кнопку. В Telegram откроется диалог <b>@sitoshik</b> с готовым сообщением. Нажми там <b>«Отправить»</b>.</p><p id="telegram-status" class="small-note" role="status">Сайт не видит, доставлено ли сообщение.</p></div><a id="telegram-link" class="button primary" target="_blank" rel="noopener noreferrer">Открыть Telegram</a></div>
       <details class="message-preview"><summary>Посмотреть сообщение</summary><pre id="telegram-preview"></pre></details>
       <div class="report-actions"><button id="copy-report" class="button secondary" type="button">Скопировать сообщение</button><button id="download-report" class="button secondary" type="button">Скачать полный отчёт</button><span id="copy-status" class="small-note" aria-live="polite"></span></div>
       <p class="small-note">Если Telegram открылся без текста, скопируй сообщение и вставь его в диалог @sitoshik.</p>
       <div class="review-heading"><h2>Разбор ответов</h2><label><input id="errors-only" type="checkbox"> Только ошибки</label></div><div id="answer-review" class="answer-review"></div>
       <section id="personal-review" class="personal-section" hidden><h2>Твои предложения</h2><p id="personal-answer"></p><p class="small-note">Для проверки преподавателем.</p></section>
       <div id="next-day-note" class="next-day-note"></div>
-      <div class="page-actions"><button id="new-attempt" class="button secondary" type="button">Повторить этот день</button><span class="small-note">Предыдущий отчёт сохранится.</span><button class="button primary" type="button" data-home>К плану →</button></div>
+      <div class="page-actions"><button id="new-attempt" class="button secondary" type="button">Повторить этот день</button><span class="small-note">Предыдущий отчёт сохранится.</span><button class="button primary" type="button" data-home>К плану</button></div>
     </section>
     <noscript><p>Чтобы выполнять задания, включи JavaScript в браузере.</p></noscript>
   </main>
-  <footer><span>TO BE · МЕСТОИМЕНИЯ И СЛОВА</span><span>Вторник + среда · по 15 минут</span></footer>
+  <footer><span>Английский · am, is, are</span><span>Вторник + среда · по 15 минут</span></footer>
 </body></html>
