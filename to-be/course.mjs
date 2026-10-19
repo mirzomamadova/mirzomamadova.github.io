@@ -69,7 +69,7 @@ export function evaluate(dayId,answers){
 }
 export function reportText(report){
   const day=days[report.day-1],date=new Date(report.finishedAt).toLocaleString('ru-RU',{timeZone:'Asia/Yekaterinburg'});
-  const lines=[`TO BE · ${day.weekday.toUpperCase()}: ${day.title}`,`Ученица: ${report.name}`,`Балл: ${report.score}/${report.total}`,`Попытка: ${report.attempt}`,`Выполнено: ${date} (UTC+5)`,`Время от начала заданий: ${Math.max(1,Math.round(report.durationSeconds/60))} мин. (с перерывами)`,`Шпаргалка во время заданий: ${report.hintUsed?'да':'нет'}`,`Код: ${report.id}`,''];
+  const lines=[`TO BE · ${day.weekday.toUpperCase()}: ${day.title}`,`Балл: ${report.score}/${report.total}`,`Попытка: ${report.attempt}`,`Выполнено: ${date} (UTC+5)`,`Время от начала заданий: ${Math.max(1,Math.round(report.durationSeconds/60))} мин. (с перерывами)`,`Шпаргалка во время заданий: ${report.hintUsed?'да':'нет'}`,`Код: ${report.id}`,''];
   report.details.forEach((q,i)=>lines.push(`${i+1}. ${q.instruction} ${q.prompt}`,`Ответ: ${q.answer}`,q.correct?'✓ Верно':`Нужна правка → ${q.expected}`,''));
   if(report.personal.trim())lines.push('СВОИ ПРЕДЛОЖЕНИЯ (проверяет преподаватель; в балл не входят)',report.personal,'');
   const weak=[...new Set(report.details.filter(q=>!q.correct).map(q=>q.topic))];
@@ -78,7 +78,7 @@ export function reportText(report){
 }
 export function telegramText(report){
   const day=days[report.day-1],date=new Date(report.finishedAt).toLocaleDateString('ru-RU',{timeZone:'Asia/Yekaterinburg'});
-  const lines=[`📘 To be · ${day.weekday} — ${day.title}`,`Ученица: ${report.name}`,`Выполнено: ${date}`,`Результат: ${report.score}/${report.total} · попытка ${report.attempt}`,`Шпаргалка: ${report.hintUsed?'использовала':'не открывала во время заданий'}`,''];
+  const lines=[`📘 To be · ${day.weekday} — ${day.title}`,`Выполнено: ${date}`,`Результат: ${report.score}/${report.total} · попытка ${report.attempt}`,`Шпаргалка: ${report.hintUsed?'использовала':'не открывала во время заданий'}`,''];
   const mistakes=report.details.filter(q=>!q.correct),weak=[...new Set(mistakes.map(q=>q.topic))];
   lines.push(weak.length?'К занятию в четверг повторить: '+weak.join(', '):'Все ответы верные.');
   if(mistakes.length){lines.push(`Ошибки (${mistakes.length}):`);for(const q of mistakes)lines.push(`${report.details.indexOf(q)+1}. ${q.prompt}\n${q.answer.slice(0,60)} → ${q.expected}`);}

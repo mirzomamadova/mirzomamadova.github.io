@@ -1,18 +1,18 @@
-import { days, pronouns, VERSION, evaluate, reportText, telegramText, telegramUrl } from './course.mjs';
+import { days, pronouns, VERSION, evaluate, reportText, telegramText, telegramUrl } from './course.mjs?v=2';
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const storageKey='english-practice:'+VERSION;
 const username=window.TO_BE_CONFIG?.telegramUsername||'';
 const unknown='Пока не помню';
 let storageAvailable=true;
-const fresh=()=>({version:VERSION,name:'',startDate:'',phase:'welcome',day:1,viewReport:null,drafts:{},reports:{}});
+const fresh=()=>({version:VERSION,startDate:'',phase:'welcome',day:1,viewReport:null,drafts:{},reports:{}});
 let state=load();
 
 function load(){
   try{
     const data=JSON.parse(localStorage.getItem(storageKey)||'null');
-    if(!data||data.version!==VERSION||typeof data.name!=='string'||!data.drafts||!data.reports)return fresh();
-    const clean={...fresh(),...data,name:data.name.slice(0,50),drafts:{},reports:{}};
+    if(!data||data.version!==VERSION||!data.drafts||!data.reports)return fresh();
+    const clean={...fresh(),startDate:data.startDate,phase:data.phase,day:data.day,viewReport:data.viewReport};
     clean.day=Number.isInteger(clean.day)&&clean.day>=1&&clean.day<=days.length?clean.day:1;
     if(!/^\d{4}-\d{2}-\d{2}$/.test(clean.startDate))clean.startDate=localDate();
     for(const day of days){
@@ -20,7 +20,7 @@ function load(){
       if(draft&&draft.answers&&typeof draft.answers==='object'){
         clean.drafts[day.id]={answers:Object.fromEntries(day.questions.filter(q=>typeof draft.answers[q.id]==='string').map(q=>[q.id,draft.answers[q.id].slice(0,180)])),personal:String(draft.personal||'').slice(0,600),startedAt:Number.isFinite(Date.parse(draft.startedAt))?draft.startedAt:new Date().toISOString(),hintUsed:!!draft.hintUsed,attempt:Number.isInteger(draft.attempt)&&draft.attempt>0?draft.attempt:1,part:Number.isInteger(draft.part)?Math.min(Math.ceil(day.questions.length/4)-1,Math.max(0,draft.part)):0};
       }
-      clean.reports[day.id]=Array.isArray(data.reports[day.id])?data.reports[day.id].filter(r=>r&&r.day===day.id&&typeof r.id==='string'&&typeof r.name==='string'&&typeof r.personal==='string'&&Number.isFinite(r.score)&&r.total===day.questions.length&&Array.isArray(r.details)&&r.details.length===day.questions.length&&Number.isFinite(Date.parse(r.finishedAt))):[];
+      clean.reports[day.id]=Array.isArray(data.reports[day.id])?data.reports[day.id].filter(r=>r&&r.day===day.id&&typeof r.id==='string'&&typeof r.personal==='string'&&Number.isFinite(r.score)&&r.total===day.questions.length&&Array.isArray(r.details)&&r.details.length===day.questions.length&&Number.isFinite(Date.parse(r.finishedAt))).map(({name,...report})=>report):[];
     }
     if(!['welcome','hub','lesson','exercise','result'].includes(clean.phase))clean.phase='hub';
     return clean;
@@ -44,7 +44,7 @@ function countAnswers(){return currentDay().questions.filter(q=>String(currentDr
 
 function renderHub(moveFocus=true){
   show('hub');const done=days.filter(d=>dayReports(d.id).length).length;const next=days.find(d=>!dayReports(d.id).length)?.id;
-  $('#hub-greeting').textContent=`${state.name}, `+(done===days.length?'обе практики пройдены. Отправь отчёт и принеси вопросы на занятие в четверг.':'во вторник разберись в правиле, в среду вспомни его сама. В четверг — занятие с преподавателем.');
+  $('#hub-greeting').textContent=done===days.length?'Обе практики пройдены. Отправь отчёт и принеси вопросы на занятие в четверг.':'Во вторник разберись в правиле, в среду вспомни его сама. В четверг — занятие с преподавателем.';
   $('#days-done').textContent=`${done}/${days.length}`;
   $('#day-grid').innerHTML=days.map(day=>{
     const reports=dayReports(day.id);const report=reports.at(-1);const draft=state.drafts[day.id];
@@ -108,7 +108,7 @@ function finish(){
   const day=currentDay();const missing=day.questions.findIndex(q=>!String(draft.answers[q.id]||'').trim());
   if(missing>=0){draft.part=Math.floor(missing/4);renderQuiz();validatePart();return;}
   const finishedAt=new Date().toISOString();
-  const report={...evaluate(day.id,draft.answers),version:VERSION,id:crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random().toString(36).slice(2)}`,day:day.id,name:state.name,personal:draft.personal,attempt:draft.attempt,startedAt:draft.startedAt,finishedAt,durationSeconds:Math.max(0,Math.round((Date.parse(finishedAt)-Date.parse(draft.startedAt))/1000)),hintUsed:draft.hintUsed};
+  const report={...evaluate(day.id,draft.answers),version:VERSION,id:crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random().toString(36).slice(2)}`,day:day.id,personal:draft.personal,attempt:draft.attempt,startedAt:draft.startedAt,finishedAt,durationSeconds:Math.max(0,Math.round((Date.parse(finishedAt)-Date.parse(draft.startedAt))/1000)),hintUsed:draft.hintUsed};
   state.reports[day.id] ||= [];state.reports[day.id].push(report);state.viewReport=report.id;delete state.drafts[day.id];$('#errors-only').checked=false;$('#copy-status').textContent='';renderResult();
 }
 function renderReview(){
@@ -118,8 +118,8 @@ function renderReview(){
 function renderResult(moveFocus=true){
   const report=activeReport();if(!report)return renderHub(moveFocus);
   show('result');$('#result-day').textContent=`${days[report.day-1].weekday.toUpperCase()} · ПОПЫТКА ${report.attempt}`;$('#score-value').textContent=`${report.score}/${report.total}`;
-  const ratio=report.score/report.total;$('#result-message').textContent=`${report.name}, `+(ratio===1?'сегодня все ответы верные. Вернись завтра и вспомни правило ещё раз.':ratio>=.75?'большая часть уже получается. Разбери ошибки — и на сегодня достаточно.':'ты попробовала — теперь разберись в ответах. Открой объяснение к ошибкам и повтори трудные связки.');
-  if(report.day===days.length&&ratio===1)$('#result-message').textContent=`${report.name}, всё верно! На занятии в четверг попробуй использовать to be в разговоре.`;
+  const ratio=report.score/report.total;$('#result-message').textContent=ratio===1?'Сегодня все ответы верные. Вернись завтра и вспомни правило ещё раз.':ratio>=.75?'Большая часть уже получается. Разбери ошибки — и на сегодня достаточно.':'Ты попробовала — теперь разберись в ответах. Открой объяснение к ошибкам и повтори трудные связки.';
+  if(report.day===days.length&&ratio===1)$('#result-message').textContent='Всё верно! На занятии в четверг попробуй использовать to be в разговоре.';
   const topics=[...new Set(report.details.map(q=>q.topic))];$('#score-breakdown').innerHTML=topics.map(topic=>{const rows=report.details.filter(q=>q.topic===topic);return `<div class="score-item"><span>${esc(topic)}</span><strong>${rows.filter(q=>q.correct).length}/${rows.length}</strong></div>`;}).join('');
   try{$('#telegram-link').href=telegramUrl(username,report);$('#telegram-link').hidden=false;}catch{$('#telegram-link').hidden=true;}
   $('#telegram-preview').textContent=telegramText(report);$('#telegram-status').textContent='Сайт сам не отправляет сообщение и не видит, доставлено ли оно.';
@@ -134,9 +134,8 @@ function download(){
 }
 
 $('#welcome-map').innerHTML=days.map(day=>`<li><span>0${day.id}</span><div><b>${esc(day.title)}</b><small>${esc(day.focus)}</small></div></li>`).join('');
-$('#start-form').addEventListener('submit',event=>{event.preventDefault();const input=$('#student-name'),name=input.value.trim();if(!name){input.setCustomValidity('Напиши своё имя.');input.reportValidity();return;}input.setCustomValidity('');state.name=name;state.startDate ||= localDate();renderHub();});
-$('#student-name').addEventListener('input',()=>$('#student-name').setCustomValidity(''));
-$('.brand').addEventListener('click',event=>{event.preventDefault();if(state.name)renderHub();else{show('welcome');window.scrollTo({top:0,behavior:'instant'});}});
+$('#start-practice').addEventListener('click',()=>{state.startDate ||= localDate();renderHub();});
+$('.brand').addEventListener('click',event=>{event.preventDefault();if(state.phase==='welcome')window.scrollTo({top:0,behavior:'instant'});else renderHub();});
 document.querySelectorAll('[data-home]').forEach(button=>button.addEventListener('click',()=>renderHub()));
 $('#day-grid').addEventListener('click',event=>{const button=event.target.closest('button[data-day]');if(!button)return;state.day=Number(button.dataset.day);if(button.dataset.report){state.viewReport=button.dataset.report;$('#errors-only').checked=false;renderResult();}else if(currentDraft())renderQuiz();else if(latest(state.day)){state.viewReport=latest(state.day).id;$('#errors-only').checked=false;renderResult();}else renderLesson();});
 $('#memory-cards').addEventListener('click',event=>{const button=event.target.closest('[data-memory]');if(!button)return;const [p,,verb]=pronouns[Number(button.dataset.memory)],open=button.getAttribute('aria-pressed')!=='true';button.setAttribute('aria-pressed',String(open));button.setAttribute('aria-label',open?`${p} ${verb}: нажми, чтобы скрыть ответ`:`${p}: вспомни форму, затем нажми`);button.innerHTML=`<strong lang="en">${esc(p)} ${open?esc(verb):'…'}</strong><span>${open?'скрыть ответ':'проверить себя'}</span>`;});
@@ -153,6 +152,5 @@ $('#copy-report').addEventListener('click',async()=>{try{await navigator.clipboa
 $('#download-report').addEventListener('click',download);
 $('#new-attempt').addEventListener('click',()=>{renderLesson();});
 
-$('#student-name').value=state.name;
-if(!state.name)show('welcome');else if(state.phase==='exercise'&&currentDraft())renderQuiz(false);else if(state.phase==='lesson')renderLesson(false);else if(state.phase==='result'&&activeReport())renderResult(false);else renderHub(false);
+if(state.phase==='welcome')show('welcome');else if(state.phase==='exercise'&&currentDraft())renderQuiz(false);else if(state.phase==='lesson')renderLesson(false);else if(state.phase==='result'&&activeReport())renderResult(false);else renderHub(false);
 save();
