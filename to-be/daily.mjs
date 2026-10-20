@@ -1,9 +1,9 @@
-import { days, pronouns, vocabulary, VERSION, evaluate, reportText, telegramText, telegramUrl } from './course.mjs?v=4';
+import { days, pronouns, vocabulary, VERSION, evaluate, reportText, telegramText, telegramUrl, tuesdayExtra, evaluateSet, errorProgress } from './course.mjs?v=5';
 const $=selector=>document.querySelector(selector);
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const storageKey='english-practice:'+VERSION, username=window.TO_BE_CONFIG?.telegramUsername||'', unknown='Пока не помню';
 let storageAvailable=true;
-const fresh=()=>({version:VERSION,phase:'hub',day:1,viewReport:null,drafts:{},reports:{}});
+const fresh=()=>({version:VERSION,phase:'hub',day:1,viewReport:null,drafts:{},reports:{},practiceDrafts:{},practiceRuns:[],practiceKey:null,practiceViewId:null});
 let state=load(), lessonStep=0, flashIndex=0, flashRevealed=false;
 
 function load(){
@@ -25,7 +25,8 @@ function load(){
       }
       clean.reports[day.id]=Array.isArray(data.reports[day.id])?data.reports[day.id].filter(r=>r&&r.day===day.id&&typeof r.id==='string'&&typeof r.personal==='string'&&Number.isFinite(r.score)&&r.total===day.questions.length&&Array.isArray(r.details)&&r.details.length===day.questions.length&&Number.isFinite(Date.parse(r.finishedAt))).map(({name,...report})=>report):[];
     }
-    if(!['hub','lesson','exercise','result'].includes(clean.phase))clean.phase='hub';
+    loadPractice(data,clean);
+    if(!['hub','lesson','exercise','result','study','practice','practice-result'].includes(clean.phase))clean.phase='hub';
     return clean;
   }catch{storageAvailable=false;return fresh();}
 }
@@ -35,7 +36,7 @@ function save(){
   $('#save-state').textContent=storageAvailable?'Ответы сохраняются':'Скачай отчёт перед закрытием';
 }
 function show(view){
-  for(const id of ['hub','lesson','exercise','result'])$('#'+id).hidden=id!==view;
+  for(const id of ['hub','lesson','exercise','result','study','practice','practice-result'])$('#'+id).hidden=id!==view;
   state.phase=view;
   document.querySelectorAll('.top-nav button').forEach(button=>{
     const current=view==='hub'?button.hasAttribute('data-home'):Number(button.dataset.openDay)===state.day;
@@ -59,7 +60,7 @@ function renderHub(moveFocus=true){
     const reports=dayReports(day.id),report=reports.at(-1),draft=state.drafts[day.id];
     const status=draft?`Начато: ${Object.keys(draft.checked).length} из ${day.questions.length} проверено`:report?`Выполнено · ${report.score}/${report.total} с первой проверки`:`${day.questions.length} заданий`;
     const history=reports.length?`<details class="report-history"><summary>Сохранённые отчёты (${reports.length})</summary>${reports.map(r=>`<button type="button" data-report="${esc(r.id)}" data-day="${day.id}">Попытка ${r.attempt}: ${r.score}/${r.total}</button>`).join('')}</details>`:'';
-    return `<article class="day-card"><div class="day-date"><h2>${day.weekday}</h2><span class="day-time">15 минут</span></div><p class="day-subtitle">${dateLabel(day)}</p><h3>${esc(day.title)}</h3><p>${esc(day.focus)}</p><ol class="day-plan"><li><b>3 мин</b><span>${day.id===1?'Прочитай правило и повтори местоимения':'Повтори порядок слов и знакомые слова'}</span></li><li><b>10 мин</b><span>Выполни ${day.questions.length} заданий по одному</span></li><li><b>2 мин</b><span>Посмотри ошибки и отправь отчёт</span></li></ol><div class="day-status">${status}</div><button type="button" class="button ${day.id===1?'primary':'secondary'}" data-day="${day.id}">${draft?'Продолжить':report?'Открыть результат':`Начать: ${day.weekday.toLowerCase()}`}</button>${history}</article>`;
+    return `<article class="day-card"><div class="day-date"><h2>${day.weekday}</h2><span class="day-time">15 минут</span></div><p class="day-subtitle">${dateLabel(day)}</p><h3>${esc(day.title)}</h3><p>${esc(day.focus)}</p><ol class="day-plan"><li><b>3 мин</b><span>${day.id===1?'Прочитай правило и повтори местоимения':'Повтори порядок слов и знакомые слова'}</span></li><li><b>10 мин</b><span>Выполни ${day.questions.length} заданий по одному</span></li><li><b>2 мин</b><span>Посмотри ошибки и отправь отчёт</span></li></ol><div class="day-status">${status}</div><button type="button" class="button ${day.id===1?'primary':'secondary'}" data-day="${day.id}">${draft?'Продолжить':report?'Открыть результат':`Начать: ${day.weekday.toLowerCase()}`}</button>${day.id===1?'<button type="button" class="study-link" data-study>Правило и дополнительные задания</button><p class="small-note">Можно проходить несколько раз. После выполнения появится тренировка ошибок.</p>':''}${history}</article>`;
   }).join('');
   $('#course-end').hidden=done<2;save();if(moveFocus)focus('hub-title');
 }
@@ -116,7 +117,7 @@ function renderQuiz(moveFocus=true){
 function checkCurrent(){
   const draft=currentDraft(),q=currentDay().questions[draft.index],answer=String(draft.answers[q.id]||'').trim();
   if(!answer||(q.type==='order'&&answer!==unknown&&(draft.wordOrder[q.id]||[]).length!==q.tokens.length)){
-    $('#validation-error').textContent=q.type==='order'?'Используй все слова или нажми «Пока не помню».':q.type==='choice'?'Выбери один вариант или нажми «Пока не помню».':'Напиши ответ или нажми «Пока не помню».';
+    $('#validation-error').textContent=q.type==='order'?'Используй все слова или нажми «Не помню. Показать ответ».':q.type==='choice'?'Выбери один вариант или нажми «Не помню. Показать ответ».':'Напиши ответ или нажми «Не помню. Показать ответ».';
     $('.question-card').classList.add('invalid');$('.question-card input, .question-card .word-bank button')?.focus();return false;
   }
   draft.checked[q.id]=true;renderQuiz(false);$('#answer-feedback').scrollIntoView({block:'nearest',behavior:'instant'});$('#next').focus({preventScroll:true});return true;
@@ -143,7 +144,7 @@ function renderResult(moveFocus=true){
   $('#telegram-preview').textContent=telegramText(report);$('#telegram-status').textContent='Сайт не отправляет сообщение автоматически и не видит, доставлено ли оно.';
   $('#personal-review').hidden=!report.personal.trim();$('#personal-review h2').textContent=report.day===1?'Вопрос преподавателю':'Твои предложения';$('#personal-answer').textContent=report.personal;
   $('#next-day-note').innerHTML=report.day===1?'<strong>Среда, 21 октября · 15 минут</strong><p>В среду будем составлять утвердительные предложения: I am ready. She is busy.</p>':'<strong>Четверг, 22 октября — занятие</strong><p>Отправь отчёт преподавателю и подготовь вопросы по ошибкам.</p>';
-  renderReview();save();if(moveFocus)focus('result-title');
+  renderRepeatActions(report);$('#new-attempt').hidden=report.day===1;renderReview();save();if(moveFocus)focus('result-title');
 }
 function download(){const report=activeReport(),url=URL.createObjectURL(new Blob(['\ufeff'+reportText(report)],{type:'text/plain;charset=utf-8'})),link=document.createElement('a');link.href=url;link.download=`to-be-day-${report.day}-attempt-${report.attempt}.txt`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 
@@ -191,4 +192,119 @@ $('#copy-report').addEventListener('click',async()=>{try{await navigator.clipboa
 $('#download-report').addEventListener('click',download);
 $('#new-attempt').addEventListener('click',()=>{lessonStep=0;flashIndex=0;flashRevealed=false;renderLesson();});
 
-if(state.phase==='exercise'&&currentDraft())renderQuiz(false);else if(state.phase==='lesson')renderLesson(false);else if(state.phase==='result'&&activeReport())renderResult(false);else renderHub(false);
+if(state.phase==='study')openStudy();else if(state.phase==='practice'&&practiceDraft())renderPractice(false);else if(state.phase==='practice-result'&&practiceRun())renderPracticeResult(false);else if(state.phase==='exercise'&&currentDraft())renderQuiz(false);else if(state.phase==='lesson')renderLesson(false);else if(state.phase==='result'&&activeReport())renderResult(false);else renderHub(false);
+
+function practiceSource(id){return dayReports(1).find(r=>r.id===id);}
+function practiceQuestions(draft){
+  const bank=draft.mode==='extra'?tuesdayExtra:days[0].questions;
+  return draft.questionIds.map(id=>bank.find(q=>q.id===id)).filter(Boolean);
+}
+function loadPractice(data,clean){
+  const source=id=>clean.reports[1]?.find(r=>r.id===id);
+  const validBase=value=>value&&['errors','extra'].includes(value.mode)&&Array.isArray(value.questionIds)&&value.questionIds.length&&new Set(value.questionIds).size===value.questionIds.length&&value.questionIds.every(id=>(value.mode==='extra'?tuesdayExtra:days[0].questions).some(q=>q.id===id))&&(value.mode==='extra'||source(value.sourceReportId));
+  for(const[key,draft]of Object.entries(data.practiceDrafts||{})){
+    if(!validBase(draft)||key!==(draft.mode==='extra'?'extra':'errors:'+draft.sourceReportId))continue;
+    const answers=Object.fromEntries(draft.questionIds.filter(id=>typeof draft.answers?.[id]==='string').map(id=>[id,draft.answers[id].slice(0,180)]));
+    clean.practiceDrafts[key]={mode:draft.mode,sourceReportId:draft.sourceReportId||null,questionIds:draft.questionIds,answers,checked:Object.fromEntries(draft.questionIds.filter(id=>answers[id]&&draft.checked?.[id]===true).map(id=>[id,true])),index:Math.max(0,Math.min(draft.questionIds.length-1,Number.isInteger(draft.index)?draft.index:0)),startedAt:Number.isFinite(Date.parse(draft.startedAt))?draft.startedAt:new Date().toISOString()};
+  }
+  clean.practiceRuns=Array.isArray(data.practiceRuns)?data.practiceRuns.filter(r=>validBase(r)&&typeof r.id==='string'&&Array.isArray(r.details)&&r.details.length===r.questionIds.length&&r.details.every(q=>r.questionIds.includes(q.id)&&typeof q.correct==='boolean')&&Number.isFinite(Date.parse(r.finishedAt))&&Number.isInteger(r.score)&&r.total===r.questionIds.length):[];
+  clean.practiceKey=typeof data.practiceKey==='string'?data.practiceKey:null;
+  clean.practiceViewId=typeof data.practiceViewId==='string'?data.practiceViewId:null;
+}
+function practiceDraft(){return state.practiceDrafts[state.practiceKey];}
+function practiceRun(){return state.practiceRuns.find(r=>r.id===state.practiceViewId);}
+function repeatHomework(){
+  state.day=1;lessonStep=0;flashIndex=0;flashRevealed=false;
+  if(currentDraft())renderQuiz();else begin();
+}
+function startPractice(mode,sourceId){
+  state.day=1;
+  const report=mode==='errors'?practiceSource(sourceId||activeReport()?.id):null;
+  if(mode==='errors'&&!report)return renderHub();
+  const key=mode==='extra'?'extra':'errors:'+report.id;
+  state.practiceKey=key;
+  if(!state.practiceDrafts[key]){
+    const progress=errorProgress(report,state.practiceRuns);
+    const questionIds=mode==='extra'?tuesdayExtra.map(q=>q.id):(progress.remaining.length?progress.remaining:report.details.filter(q=>!q.correct).map(q=>q.id));
+    if(!questionIds.length)return renderResult();
+    state.practiceDrafts[key]={mode,sourceReportId:report?.id||null,questionIds,answers:{},checked:{},index:0,startedAt:new Date().toISOString()};
+  }
+  renderPractice();
+}
+function renderRepeatActions(report){
+  $('#tuesday-repeat').hidden=report.day!==1;
+  if(report.day!==1)return;
+  const progress=errorProgress(report,state.practiceRuns);
+  $('#practice-errors').hidden=!progress.total;
+  $('#practice-errors').textContent=progress.fixed===progress.total?'Повторить задания с ошибками ещё раз':`Потренировать ошибки (${progress.remaining.length})`;
+  $('#retry-tuesday').textContent=state.drafts[1]?'Продолжить новую попытку':'Пройти все 16 заданий ещё раз';
+  $('#error-progress').textContent=progress.total?(progress.rounds?`После повторения исправлено ${progress.fixed} из ${progress.total}. Результат основной попытки: ${report.score}/${report.total}.`:'Сначала прочитай объяснения ниже, затем выполни задания с ошибками ещё раз.'):'Ошибок нет. Можно повторить всё задание или попробовать дополнительные упражнения.';
+}
+function openStudy(topic){
+  state.day=1;show('study');
+  $('#study-content').innerHTML=`
+    <details id="study-meaning"><summary>Что такое to be и зачем оно нужно</summary><div><p><b>To be означает «быть».</b> В настоящем времени у него три формы: am, is и are.</p><p>По-русски мы говорим «Я готова». Слова «быть» в этой фразе нет. По-английски нужен глагол: <b lang="en">I am ready.</b> Нельзя написать I ready.</p><p><span lang="en">She is happy.</span> — Она рада.<br><span lang="en">We are at home.</span> — Мы дома.</p><p>Am, is и are помогают сказать, какой человек или где он находится. Выбираем форму по местоимению.</p></div></details>
+    <details id="study-pronouns"><summary>Местоимения: кто о ком говорит</summary><div><p>Местоимение заменяет имя или название. <b>I</b> — я, <b>you</b> — ты или вы, <b>he</b> — он, <b>she</b> — она, <b>it</b> — оно или это, <b>we</b> — мы, <b>they</b> — они.</p>${table()}<p>Сначала найди местоимение. Затем выбери форму из последнего столбца.</p></div></details>
+    <details id="study-forms"><summary>Как выбрать am, is или are</summary><div>${groups()}<p><b>Am — только с I.</b> I am ready. — Я готова.</p><p><b>Is — с he, she и it.</b> He is tired. — Он устал. She is happy. — Она рада.</p><p><b>Are — с you, we и they.</b> You are ready. — Ты готова. They are at home. — Они дома.</p><p>Слова ready, happy и tired не меняют форму to be. В I am ready и I am tired форма одинаковая, потому что местоимение в обоих случаях I.</p></div></details>
+    <details id="study-you"><summary>Почему you are, даже если это один человек</summary><div><p><b>You</b> переводится и как «ты», и как «вы». В обоих случаях нужна форма <b>are</b>.</p><p><span lang="en">You are ready.</span> — Ты готова.<br><span lang="en">You are ready.</span> — Вы готовы.</p><p>Для «ты» не нужно заменять are на is. Запоминай пару целиком: <b>you are</b>.</p></div></details>`;
+  const selected=['meaning','pronouns','forms','you'].includes(topic)?topic:'meaning';$('#study-'+selected).open=true;
+  $('#extra-history').innerHTML=state.practiceRuns.length?`<details class="report-history"><summary>Сохранённые повторения (${state.practiceRuns.length})</summary>${state.practiceRuns.map((r,i)=>`<button type="button" data-practice-report="${esc(r.id)}">${i+1}. ${r.mode==='errors'?'Работа над ошибками':r.total===10?'Дополнительные задания':'Ошибки дополнительных заданий'}: ${r.score}/${r.total}</button>`).join('')}</details>`:'';
+  $('#study-resume').innerHTML=Object.entries(state.practiceDrafts).map(([key,draft])=>`<button type="button" class="button secondary" data-resume-practice="${esc(key)}">${draft.mode==='errors'?'Продолжить работу над ошибками':'Продолжить дополнительные задания'} (${Object.keys(draft.checked).length}/${draft.questionIds.length})</button>`).join('');
+  save();focus('study-title');
+}
+function renderPractice(moveFocus=true){
+  const draft=practiceDraft();if(!draft)return openStudy();
+  show('practice');const questions=practiceQuestions(draft),q=questions[draft.index],checked=!!draft.checked[q.id],answer=draft.answers[q.id]||'';
+  $('#practice-title').textContent=draft.mode==='errors'?'Работа над ошибками':q.action;
+  $('#practice-description').textContent=q.instruction;
+  $('#practice-counter').textContent=`Задание ${draft.index+1} из ${questions.length}`;
+  $('#practice-example').textContent=q.example;
+  let input=q.type==='choice'?`<div class="options ${q.options.some(s=>s.length>10)?'has-long-choices':''}">${q.options.map(option=>`<label class="option"><input type="radio" name="practice-answer" value="${esc(option)}" ${answer===option?'checked':''} ${checked?'disabled':''} aria-describedby="practice-prompt"><span>${esc(option)}</span></label>`).join('')}</div>`:`<label class="answer-label" for="practice-input">${esc(q.format)}</label><input id="practice-input" name="practice-answer" type="text" maxlength="180" autocomplete="off" spellcheck="false" value="${esc(answer===unknown?'':answer)}" placeholder="${esc(q.placeholder||'Напиши am, is или are')}" aria-describedby="practice-prompt practice-description" ${checked?'disabled':''}>`;
+  $('#practice-question').innerHTML=`<fieldset class="question-card"><legend>Задание ${draft.index+1}</legend><p id="practice-prompt" class="prompt">${esc(q.prompt)}</p>${q.translation?`<p class="translation">${esc(q.translation)}</p>`:''}${input}<button type="button" class="dont-know" data-practice-unknown ${checked?'disabled':''}>Не помню. Показать ответ</button></fieldset>`;
+  $('#practice-feedback').hidden=!checked;
+  if(checked){const result=evaluateSet([q],draft.answers).details[0];$('#practice-feedback').classList.toggle('wrong',!result.correct);$('#practice-feedback').innerHTML=`<strong>${result.correct?'Верно':'Правильный ответ: '+esc(result.expected)}</strong><p>${esc(result.explanation)}</p>${result.correct?'':'<p>Прочитай ответ вслух. После остальных заданий можно будет вернуться к этой ошибке.</p>'}`;}
+  $('#practice-next').textContent=checked?(draft.index===questions.length-1?'Посмотреть результат':'Следующее задание'):'Проверить ответ';$('#practice-validation').textContent='';save();if(moveFocus)focus('practice-title');
+}
+function checkPractice(){
+  const draft=practiceDraft(),q=practiceQuestions(draft)[draft.index];
+  if(!String(draft.answers[q.id]||'').trim()){$('#practice-validation').textContent='Ответь на вопрос или нажми «Не помню. Показать ответ».';return;}
+  draft.checked[q.id]=true;renderPractice(false);$('#practice-feedback').scrollIntoView({block:'nearest'});$('#practice-next').focus({preventScroll:true});
+}
+function finishPractice(){
+  const draft=practiceDraft(),questions=practiceQuestions(draft),missing=questions.findIndex(q=>!draft.checked[q.id]);
+  if(missing>=0){draft.index=missing;return renderPractice();}
+  const run={...evaluateSet(questions,draft.answers),id:crypto.randomUUID?crypto.randomUUID():Date.now()+'-practice',mode:draft.mode,sourceReportId:draft.sourceReportId,questionIds:draft.questionIds,startedAt:draft.startedAt,finishedAt:new Date().toISOString()};
+  state.practiceRuns.push(run);state.practiceViewId=run.id;delete state.practiceDrafts[state.practiceKey];renderPracticeResult();
+}
+function renderPracticeResult(moveFocus=true){
+  const run=practiceRun();if(!run)return openStudy();
+  show('practice-result');const report=practiceSource(run.sourceReportId),progress=errorProgress(report,state.practiceRuns),wrong=run.details.filter(q=>!q.correct);
+  $('#practice-result-title').textContent=run.mode==='errors'?'Результат работы над ошибками':'Результат дополнительной практики';
+  $('#practice-score').textContent=`${run.score}/${run.total}`;
+  $('#practice-result-message').textContent=run.mode==='errors'?`Исправлено ${progress.fixed} из ${progress.total} ошибок основной попытки. ${progress.remaining.length?'Прочитай объяснения и попробуй оставшиеся задания ещё раз.':'Все ошибки исправлены. Если нужно, можно повторить эти задания снова.'}`:(wrong.length?'Посмотри объяснения. Можно повторить только ошибки или пройти все дополнительные задания ещё раз.':'Все ответы верные. Можно повторить эти задания, когда понадобится.');
+  $('#practice-again').textContent=run.mode==='extra'?(state.practiceDrafts.extra?'Продолжить начатое повторение':'Пройти все 10 заданий ещё раз'):progress.remaining.length?`Повторить оставшиеся ошибки (${progress.remaining.length})`:'Пройти ещё раз';
+  $('#practice-only-wrong').hidden=run.mode!=='extra'||!wrong.length||!!state.practiceDrafts.extra;
+  $('#practice-review').innerHTML=run.details.map(q=>`<article class="review-card ${q.correct?'':'wrong'}"><p class="review-status">${q.correct?'Верно':'Ошибка'}</p><h3>${esc(q.prompt)}</h3><p>Твой ответ: ${esc(q.answer)}</p>${q.correct?'':`<p>Правильный ответ: <b>${esc(q.expected)}</b></p>`}<p>${esc(q.explanation)}</p></article>`).join('');
+  const date=new Date(run.finishedAt).toLocaleDateString('ru-RU',{timeZone:'Asia/Yekaterinburg'});
+  const lines=['To be · Вторник',run.mode==='errors'?'Работа над ошибками':run.total===10?'Дополнительные задания':'Ошибки дополнительных заданий',`Выполнено: ${date}`,`Результат этого прохождения: ${run.score}/${run.total}`];
+  if(report)lines.push(`Основная попытка ${report.attempt}: ${report.score}/${report.total}`,`Всего исправлено ошибок: ${progress.fixed}/${progress.total}`);
+  if(wrong.length)lines.push('Осталось повторить:',...wrong.map(q=>`${q.prompt}: ${q.answer} → ${q.expected}`));
+  else lines.push('Все ответы в этом прохождении верные.');
+  $('#practice-telegram').href=`https://t.me/${encodeURIComponent(username)}?text=${encodeURIComponent(lines.join('\n').slice(0,3000))}`;
+  save();if(moveFocus)focus('practice-result-title');
+}
+document.addEventListener('click',event=>{
+  const button=event.target.closest('button');if(!button)return;
+  if(button.hasAttribute('data-study'))openStudy(button.dataset.study);
+  else if(button.hasAttribute('data-extra-practice'))startPractice('extra');
+  else if(button.hasAttribute('data-resume-practice')){state.practiceKey=button.dataset.resumePractice;renderPractice();}
+  else if(button.hasAttribute('data-practice-report')){state.practiceViewId=button.dataset.practiceReport;renderPracticeResult();}
+});
+$('#retry-tuesday').addEventListener('click',repeatHomework);
+$('#practice-errors').addEventListener('click',()=>startPractice('errors'));
+$('#study-cards').addEventListener('click',()=>{state.day=1;lessonStep=1;flashIndex=0;flashRevealed=false;renderLesson();});
+$('#practice-form').addEventListener('input',event=>{if(event.target.name!=='practice-answer')return;const draft=practiceDraft(),q=practiceQuestions(draft)[draft.index];if(!draft.checked[q.id]){draft.answers[q.id]=event.target.value;$('#practice-validation').textContent='';save();}});
+$('#practice-question').addEventListener('click',event=>{if(!event.target.closest('[data-practice-unknown]'))return;const draft=practiceDraft(),q=practiceQuestions(draft)[draft.index];if(!draft.checked[q.id]){draft.answers[q.id]=unknown;checkPractice();}});
+$('#practice-form').addEventListener('submit',event=>{event.preventDefault();const draft=practiceDraft(),questions=practiceQuestions(draft);if(!draft.checked[questions[draft.index].id])return checkPractice();if(draft.index<questions.length-1){draft.index++;renderPractice();}else finishPractice();});
+$('#practice-again').addEventListener('click',()=>{const run=practiceRun();startPractice(run.mode,run.sourceReportId);});
+$('#practice-only-wrong').addEventListener('click',()=>{const run=practiceRun(),questionIds=run.details.filter(q=>!q.correct).map(q=>q.id);if(!questionIds.length)return;state.practiceKey='extra';state.practiceDrafts.extra={mode:'extra',sourceReportId:null,questionIds,answers:{},checked:{},index:0,startedAt:new Date().toISOString()};renderPractice();});

@@ -46,6 +46,23 @@ export const days = [
 ].map(day=>({...day,questions:day.questions.map((q,i)=>({...q,id:`d${day.id}q${i+1}`}))}));
 
 export function normalize(value){return String(value??'').normalize('NFKC').toLowerCase().replace(/[’‘`]/g,"'").replace(/[,!?\.]/g,' ').replace(/\s+/g,' ').trim();}
+export const tuesdayExtra = [
+  ...[['я','I am'],['ты','you are'],['он','he is'],['она','she is'],['оно / это (о предмете)','it is'],['мы','we are'],['они','they are'],['вы','you are']].map(([prompt,answer])=>({
+    type:'text',prompt,answers:[answer],format:'Два слова: местоимение и форма to be.',placeholder:'Напиши два слова',action:'Напиши местоимение и форму to be',instruction:'Переведи местоимение на английский и добавь am, is или are. Напиши два слова.',example:answer==='we are'?'я: I am.':'мы: we are.',explanation:`${prompt} — ${answer.split(' ')[0]}. Правильная пара: ${answer}.`,topic:'Местоимения и формы',
+  })),
+  choose('Как переводится to be?','быть',['делать','быть','иметь'],'To be означает «быть». Am, is и are — его формы в настоящем времени.'),
+  {...choose('Почему в «Она рада» нет слова «быть», а в She is happy есть is?','В английском здесь нужен глагол.',['Is означает «рада».','She и is означают одно и то же.','В английском здесь нужен глагол.'],'В русском переводе глагол «быть» опускается. В английском is нужно оставить: She is happy.'),example:'I am ready. — Я готова. В английском есть am, хотя в русском переводе слова «быть» нет.'},
+].map((q,i)=>({...q,id:`extra${i+1}`}));
+export function evaluateSet(questions,answers){
+  const details=questions.map(q=>({id:q.id,topic:q.topic,prompt:q.prompt,instruction:q.instruction,answer:String(answers[q.id]??'').trim(),expected:q.answers[0],correct:q.answers.some(a=>normalize(a)===normalize(answers[q.id])),explanation:q.explanation}));
+  return {score:details.filter(q=>q.correct).length,total:details.length,details};
+}
+export function errorProgress(report,runs=[]){
+  const answers=new Map((report?.details||[]).filter(q=>!q.correct).map(q=>[q.id,false]));
+  const rounds=runs.filter(run=>run.mode==='errors'&&run.sourceReportId===report?.id);
+  for(const run of rounds)for(const q of run.details)if(answers.has(q.id))answers.set(q.id,q.correct);
+  return {total:answers.size,fixed:[...answers.values()].filter(Boolean).length,rounds:rounds.length,remaining:[...answers].filter(([,correct])=>!correct).map(([id])=>id)};
+}
 export function evaluate(dayId,answers){
   const day=days.find(d=>d.id===dayId);if(!day)throw new Error('Unknown day');
   const details=day.questions.map(q=>({id:q.id,topic:q.topic,prompt:q.prompt,instruction:q.instruction,answer:String(answers[q.id]??'').trim(),expected:q.answers[0],correct:q.answers.some(a=>normalize(a)===normalize(answers[q.id])),explanation:q.explanation}));

@@ -5,8 +5,8 @@
   <meta name="theme-color" content="#3654ed"><meta name="referrer" content="no-referrer">
   <meta name="description" content="Практика to be на вторник и среду: по 15 минут. Местоимения, am / is / are, знакомые слова и отчёт преподавателю в Telegram.">
   <title>To be · Вторник и среда</title>
-  <link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./styles.css?v=4"><link rel="stylesheet" href="./daily.css?v=4">
-  <script src="./config.js" defer></script><script type="module" src="./daily.mjs?v=4"></script>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./styles.css?v=5"><link rel="stylesheet" href="./daily.css?v=5">
+  <script src="./config.js" defer></script><script type="module" src="./daily.mjs?v=5"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">К содержимому</a>
@@ -46,6 +46,7 @@
     <section id="result" hidden aria-labelledby="result-title">
       <div class="page-heading"><div><p id="result-day" class="eyebrow"></p><h1 id="result-title" tabindex="-1">Задания выполнены</h1><p id="result-message" class="section-description"></p></div><span class="result-score"><strong id="score-value"></strong><span>с первой проверки</span></span></div>
       <div id="score-breakdown" class="score-breakdown"></div>
+      <div id="tuesday-repeat" class="repeat-area" hidden><h2>Повторение вторника</h2><p>Можно заниматься несколько раз. Каждая попытка сохраняется отдельно.</p><p id="error-progress" class="small-note"></p><div class="repeat-actions"><button id="retry-tuesday" type="button" class="button secondary">Пройти все 16 заданий ещё раз</button><button id="practice-errors" type="button" class="button primary">Потренировать ошибки</button><button type="button" class="button secondary" data-study>Правило и дополнительные задания</button></div></div>
       <div class="delivery-box"><div><h2>Отправь результат преподавателю</h2><p>Нажми кнопку. В Telegram откроется диалог <b>@sitoshik</b> с готовым сообщением. Нажми там <b>«Отправить»</b>.</p><p id="telegram-status" class="small-note" role="status">Сайт не видит, доставлено ли сообщение.</p></div><a id="telegram-link" class="button primary" target="_blank" rel="noopener noreferrer">Открыть Telegram</a></div>
       <details class="message-preview"><summary>Посмотреть сообщение</summary><pre id="telegram-preview"></pre></details>
       <div class="report-actions"><button id="copy-report" class="button secondary" type="button">Скопировать сообщение</button><button id="download-report" class="button secondary" type="button">Скачать полный отчёт</button><span id="copy-status" class="small-note" aria-live="polite"></span></div>
@@ -54,6 +55,22 @@
       <section id="personal-review" class="personal-section" hidden><h2>Твои предложения</h2><p id="personal-answer"></p><p class="small-note">Для проверки преподавателем.</p></section>
       <div id="next-day-note" class="next-day-note"></div>
       <div class="page-actions"><button id="new-attempt" class="button secondary" type="button">Повторить этот день</button><span class="small-note">Предыдущий отчёт сохранится.</span><button class="button primary" type="button" data-home>К плану</button></div>
+    </section>
+    <section id="study" hidden aria-labelledby="study-title">
+      <div class="page-heading"><div><p class="eyebrow">Вторник · дополнительное повторение</p><h1 id="study-title" tabindex="-1">Разобраться с to be</h1><p class="section-description">Выбери то, что осталось непонятным. Прочитай объяснение и примеры. Возвращайся сюда, когда нужно.</p></div></div>
+      <div id="study-resume" class="repeat-actions"></div>
+      <div id="study-content" class="study-content"></div>
+      <div class="repeat-area"><h2>Проверить себя</h2><p>10 заданий, примерно 5 минут. Напиши местоимения с формами to be и ответь на два вопроса о правиле. Можно проходить повторно.</p><div class="repeat-actions"><button type="button" class="button primary" data-extra-practice>Дополнительные задания</button><button type="button" class="button secondary" id="study-cards">Карточки местоимений</button><button type="button" class="button secondary" data-open-day="1">К домашнему заданию</button></div><div id="extra-history" class="small-note"></div></div>
+    </section>
+    <section id="practice" hidden aria-labelledby="practice-title">
+      <div class="page-heading"><div><p class="eyebrow">Вторник · повторение</p><h1 id="practice-title" tabindex="-1"></h1><p id="practice-description" class="section-description"></p></div><span id="practice-counter" class="step-count"></span></div>
+      <form id="practice-form" novalidate><div class="exercise-example"><h2>Пример</h2><p id="practice-example"></p></div><div id="practice-question"></div><div id="practice-feedback" class="answer-feedback" role="status" hidden></div><p id="practice-validation" class="error-text" role="alert"></p><div class="page-actions"><button class="button secondary" type="button" data-study>Посмотреть правило</button><span class="small-note">Ответы сохраняются. Можно вернуться позже.</span><button id="practice-next" class="button primary" type="submit">Проверить ответ</button></div></form>
+    </section>
+    <section id="practice-result" hidden aria-labelledby="practice-result-title">
+      <div class="page-heading"><div><p class="eyebrow">Вторник · результат повторения</p><h1 id="practice-result-title" tabindex="-1"></h1><p id="practice-result-message" class="section-description"></p></div><span class="result-score"><strong id="practice-score"></strong><span>в этом прохождении</span></span></div>
+      <div class="repeat-actions"><button id="practice-again" class="button primary" type="button"></button><button id="practice-only-wrong" class="button secondary" type="button" hidden>Повторить только ошибки</button><button class="button secondary" type="button" data-study>Правило и дополнительные задания</button><button class="button secondary" type="button" data-open-day="1">К домашнему заданию</button></div>
+      <div class="practice-delivery"><p>Можно отправить преподавателю результат повторения. В Telegram нажми «Отправить».</p><a id="practice-telegram" class="button secondary" target="_blank" rel="noopener noreferrer">Открыть Telegram</a></div>
+      <h2>Ответы и объяснения</h2><div id="practice-review" class="answer-review"></div>
     </section>
     <noscript><p>Чтобы выполнять задания, включи JavaScript в браузере.</p></noscript>
   </main>
