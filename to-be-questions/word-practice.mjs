@@ -27,3 +27,6 @@ export const wordLessons=[
   write('Понятно. Напиши английское слово.','clear'),write('Права / прав. Напиши английское слово.','right')
  ]}
 ].map(p=>({...p,questions:p.questions.map((q,i)=>({...q,id:`w${p.part}q${i+1}`}))}));
+
+// Separate learning practice. Daily work retains its own questions and results.
+export const learningQuestions=wordLessons[0].questions.map((q,i)=>({...q,id:`learnq${i+1}`}));
