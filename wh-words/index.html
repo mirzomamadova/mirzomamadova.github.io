@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f5f7fb">
+  <meta name="description" content="Домашняя практика по 15 минут во вторник и среду: вопросительные слова, полезные вопросы и задания с проверкой. В четверг — занятие.">
+  <title>Домашняя практика · 15 минут в день</title>
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./nigor-theme.css">
+</head>
+<body>
+  <a class="skip" href="#main">К заданиям</a>
+  <header class="site-header"><a href="#main" class="brand" data-nav="homework"><span class="brand-mark" aria-hidden="true">wh</span><span>Английский</span></a><span class="header-note">Вопросительные слова</span><nav class="top-nav" aria-label="Дни практики"><button type="button" data-plan>План</button><button type="button" data-day="tuesday">Вторник</button><button type="button" data-day="wednesday">Среда</button></nav></header>
+  <main id="main" tabindex="-1">
+    <div class="intro"><div><p class="eyebrow">ДВА ДНЯ ПРАКТИКИ · ПО 15 МИНУТ</p><h1>Слова, которые помогают спросить</h1><p>Сначала запомни слова и вопросы. Затем собирай, выбирай и отвечай сама.</p></div><div class="completion-count"><strong id="day-completion">0 / 2</strong><span>дня практики</span></div></div>
+    <nav class="tabs" aria-label="Разделы практики"><button type="button" data-nav="words" aria-current="page"><span class="tab-num">01</span><span>Слова<small>7 слов и заучивание</small></span></button><button type="button" data-nav="phrases"><span class="tab-num">02</span><span>Полезные вопросы<small>5 вопросов и ответы</small></span></button><button type="button" data-nav="homework"><span class="tab-num">03</span><span>Домашнее задание<small>План на два дня</small></span></button></nav>
+    <div id="content"></div>
+    <p id="storage-message" class="storage-message">Прогресс сохраняется на этом устройстве. Можно продолжить позже.</p>
+  </main>
+  <footer class="site-footer"><span>Маленькими шагами, с повторением.</span><button type="button" id="reset-toggle">Начать заново</button></footer>
+  <div id="reset-panel" class="reset-panel" hidden><p>Очистить отметки карточек и ответы в домашнем задании на этом устройстве?</p><div class="actions"><button type="button" id="reset-confirm" class="button">Да, начать заново</button><button type="button" id="reset-cancel" class="button secondary">Оставить прогресс</button></div></div>
+  <div id="speech-message" class="sr-only" role="status" aria-live="polite"></div>
+  <noscript><p class="noscript">Для карточек и проверки ответов включи JavaScript в браузере.</p></noscript>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
