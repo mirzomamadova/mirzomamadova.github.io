@@ -1,4 +1,4 @@
-import {exerciseModes} from './exercises.js?v=20261027-audio-answers-final';
+import {exerciseModes} from './exercises.js?v=20261029-guided-tour';
 export const words=[
  {id:'what',en:'What',ru:'что; какой',context:'Обычно без заданных вариантов.',example:'What is it?',exampleRu:'Что это? It — знакомое местоимение.'},
  {id:'who',en:'Who',ru:'кто',context:'Спрашиваем о человеке.',example:'Who is she?',exampleRu:'Кто она?'},

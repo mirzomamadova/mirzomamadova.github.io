@@ -1,10 +1,11 @@
-import {taskDisplay,builtAnswer,exerciseModes} from './exercises.js?v=20261027-audio-answers-final';
-import {words,phrases,tasks,days,lessonDay,instructions,gradeAnswer,normalizeAnswer} from './content.js?v=20261027-audio-answers-final';
-import {makeState,restoreState,summarizeDay} from './progress.js?v=20261027-audio-answers-final';
-import {makeMemory,recordMemory,nextMemory} from './memory.js?v=20261027-audio-answers-final';
-import {memoryView} from './memory-view.js?v=20261027-audio-answers-final';
-import {createAudioPlayer} from './audio.js?v=20261027-audio-answers-final';
-import {questionGuide,speakingView} from './question-guide.js?v=20261027-audio-answers-final';
+import {createGuidedTour} from './tour.js?v=20261029-guided-tour';
+import {taskDisplay,builtAnswer,exerciseModes} from './exercises.js?v=20261029-guided-tour';
+import {words,phrases,tasks,days,lessonDay,instructions,gradeAnswer,normalizeAnswer} from './content.js?v=20261029-guided-tour';
+import {makeState,restoreState,summarizeDay} from './progress.js?v=20261029-guided-tour';
+import {makeMemory,recordMemory,nextMemory} from './memory.js?v=20261029-guided-tour';
+import {memoryView} from './memory-view.js?v=20261029-guided-tour';
+import {createAudioPlayer} from './audio.js?v=20261029-guided-tour';
+import {questionGuide,speakingView} from './question-guide.js?v=20261029-guided-tour';
 
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -19,8 +20,8 @@ const currentDay=()=>days.find(d=>d.id===state.quiz.day)||days[0];
 const dailyStats=()=>summarizeDay(state.quiz.answers,currentDay().id);
 function dayNavigation(){return `<div class="day-navigation"><nav aria-label="Дни домашнего задания">${days.map(d=>{const stat=summarizeDay(state.quiz.answers,d.id);return `<button type="button" data-day="${d.id}" aria-pressed="${state.quiz.day===d.id}"><b>${d.title}</b><span>${d.date} · ${stat.done}/${stat.total}</span></button>`;}).join('')}</nav><button type="button" class="text-button" data-plan>План на два дня</button></div>`;}
 function startDay(id){const day=days.find(d=>d.id===id);if(!day)return;copyMessage='';copyFallback=false;state.tab='homework';state.quiz.day=id;state.quiz.queue=[...day.taskIds];const next=day.taskIds.findIndex(x=>!state.quiz.answers[x]?.correct);state.quiz.pos=Math.max(0,next);state.quiz.started=true;state.quiz.result=next===-1;save();render(true);$('#content').scrollIntoView({block:'start',behavior:'auto'});}
-let state=load(),flipped=false,flashChoice=null,copyMessage='',copyFallback=false;
-function save(){try{localStorage.setItem(KEY,JSON.stringify(state));storageOkay=true;}catch{storageOkay=false;}updateStorageMessage();}
+let state=load(),flipped=false,flashChoice=null,copyMessage='',copyFallback=false,tour=null,tourBackup=null;
+function save(){if(tour?.active)return;try{localStorage.setItem(KEY,JSON.stringify(state));storageOkay=true;}catch{storageOkay=false;}updateStorageMessage();}
 function updateStorageMessage(){const el=$('#storage-message');if(el)el.textContent=storageOkay?'Прогресс сохраняется на этом устройстве. Можно продолжить позже.':'Браузер не сохраняет прогресс. Выполни задания, не закрывая эту страницу.';}
 function entry(id){return state.quiz.answers[id]||(state.quiz.answers[id]={draft:'',cup:null,correct:false,attempts:0,help:false,revealed:false,firstTry:null,feedback:''});}
 function cup(n){return `<svg viewBox="0 0 180 140" aria-hidden="true"><path d="M38 39h85v48c0 36-85 36-85 0Z" fill="#f7f9fc" stroke="#44526b" stroke-width="3"/><path d="M124 45h13c33 0 33 37-12 37M25 124h116" fill="none" stroke="#44526b" stroke-width="3"/><path d="M58 22V10M80 22V6M101 22V10" stroke="#9caac0" stroke-width="3"/>${n?'<path d="M47 63h67M47 77h67M51 91h59" stroke="#879ab8" stroke-width="6"/>':'<circle cx="80" cy="77" r="16" fill="#d5dff0" stroke="#879ab8" stroke-width="2"/>'}</svg>`;}
@@ -70,6 +71,7 @@ function resultText(){return 'Домашнее задание · WH-слова �
 function result(){const stat=dailyStats(),day=stat.day;return `<section class="result" aria-labelledby="section-title">${dayNavigation()}<p class="eyebrow">${day.title.toUpperCase()} · ${day.date.toUpperCase()}</p><h2 id="section-title" tabindex="-1">Письменная часть готова</h2><p class="result-lead">${day.id==='tuesday'?'Ты прошла от смысла слова к собственному вопросу. Осталась устная минутка.':'Вопросы и ответы написаны. Теперь скажи без текста; произношение проверим на занятии.'}</p><div class="result-stats"><div><b>${stat.done}<span> / ${stat.total}</span></b><p>выполнено за день</p></div><div><b>${stat.first}</b><p>с первой попытки,<br>без подсказки</p></div><div><b>${stat.done-stat.first}</b><p>после повторения<br>или подсказки</p></div></div>${stat.repeat.length?`<div class="repeat-list"><h3>После устной минутки — повтор, если осталось время</h3><p>${stat.repeat.map(t=>'№ '+t.n).join(' · ')}</p><button type="button" class="button secondary" data-repeat>Повторить трудное →</button></div>`:'<div class="repeat-list"><h3>Все ответы этого дня получились с первой попытки</h3><p>Если осталось время, повтори карточки без перевода. После 15 минут на сегодня достаточно.</p></div>'}
   <div class="speaking-finish"><h3>Последняя минута из 15 — вслух</h3><p>Скажи по ситуации без английского текста. Затем открой образец, послушай и сравни.</p><button type="button" class="button" data-speech-start="${day.id}">${state.oralDone[day.id]?'Повторить устную минутку':'Перейти к устной минутке'} →</button></div><div class="result-actions"><button type="button" class="button secondary" data-copy>Скопировать результат</button><button type="button" class="text-button" data-plan>План на два дня →</button></div><p class="copy-message" role="status">${esc(copyMessage||'Результат можно отправить преподавателю самостоятельно.')}</p>${copyFallback?`<textarea readonly class="copy-fallback" aria-label="Результат для копирования">${esc(resultText())}</textarea>`:''}</section>`;}
 function render(focus=false){
+  $('#tour-welcome').hidden=state.tab!=='homework'||state.quiz.started;
   player.stop();speechStatus('');
   const isPlan=state.tab==='homework'&&!state.quiz.started;$('.intro').hidden=!isPlan;$('.tabs').hidden=!['words','phrases'].includes(state.tab);$('#day-completion').textContent=days.filter(d=>summarizeDay(state.quiz.answers,d.id).complete).length+' / 2';document.body.dataset.view=isPlan?'plan':'practice';
   document.querySelectorAll('.tabs [data-nav]').forEach(b=>{if(b.dataset.nav===state.tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
@@ -90,10 +92,12 @@ function checkAnswer(){
   if(!good)$('#answer')?.focus();else $('[data-quiz-next]').focus({preventScroll:true});
 }
 function speechStatus(message){$('#speech-message').textContent=message;document.querySelectorAll('.audio-note').forEach(x=>x.textContent=message);}
-document.addEventListener('submit',event=>{if(event.target.id==='homework-form'){event.preventDefault();checkAnswer();}if(event.target.id==='memory-form'){event.preventDefault();const kind=state.tab,m=state.memory[kind];m.question=$('#memory-question').value;if(kind==='phrases')m.reply=$('#memory-reply').value;if(!m.question.trim()||(kind==='phrases'&&!m.reply.trim())){m.error=kind==='words'?'Напиши слово или нажми «Не помню».':'Напиши вопрос и ответ или нажми «Не помню».';}else recordMemory(m,kind);save();render();}});
-document.addEventListener('input',event=>{if(event.target.id==='answer'){entry(state.quiz.queue[state.quiz.pos]).draft=event.target.value;save();}if(event.target.dataset.memoryField){state.memory[state.tab][event.target.dataset.memoryField]=event.target.value;save();}});
+document.addEventListener('submit',event=>{if(tour?.active){event.preventDefault();return;}if(event.target.id==='homework-form'){event.preventDefault();checkAnswer();}if(event.target.id==='memory-form'){event.preventDefault();const kind=state.tab,m=state.memory[kind];m.question=$('#memory-question').value;if(kind==='phrases')m.reply=$('#memory-reply').value;if(!m.question.trim()||(kind==='phrases'&&!m.reply.trim())){m.error=kind==='words'?'Напиши слово или нажми «Не помню».':'Напиши вопрос и ответ или нажми «Не помню».';}else recordMemory(m,kind);save();render();}});
+document.addEventListener('input',event=>{if(tour?.active)return;if(event.target.id==='answer'){entry(state.quiz.queue[state.quiz.pos]).draft=event.target.value;save();}if(event.target.dataset.memoryField){state.memory[state.tab][event.target.dataset.memoryField]=event.target.value;save();}});
 document.addEventListener('click',async event=>{
+  if(tour?.active)return;
   const b=event.target.closest('button,[data-nav]');if(!b||b.disabled)return;
+  if(b.hasAttribute('data-tour-start')){tour.start();return;}
   if(b.dataset.exerciseChoice!==undefined||b.dataset.exerciseToken!==undefined||b.hasAttribute('data-exercise-undo')){const task=taskMap[state.quiz.queue[state.quiz.pos]],a=entry(task.id);if(a.correct)return;a.tokens||=[];if(b.dataset.exerciseChoice!==undefined)a.draft=task.options[Number(b.dataset.exerciseChoice)];else{if(b.hasAttribute('data-exercise-undo'))a.tokens.pop();else{const i=Number(b.dataset.exerciseToken);if(!a.tokens.includes(i))a.tokens.push(i);}a.draft=builtAnswer(task,a.tokens);}a.feedback='';save();render();return;}
   if(b.dataset.nav){event.preventDefault();navigate(b.dataset.nav);return;}
   if(b.dataset.memoryStart||b.dataset.memoryRestart){const kind=b.dataset.memoryStart||b.dataset.memoryRestart;if(b.dataset.memoryRestart)state.memory[kind]=makeMemory(kind);state.memory[kind].active=true;navigate(kind);return;}
@@ -130,4 +134,11 @@ document.addEventListener('click',async event=>{
 });
 document.addEventListener('visibilitychange',()=>{if(document.hidden)player.stop();});
 window.addEventListener('pagehide',()=>player.stop());
+tour=createGuidedTour({
+  onEnter(){tourBackup={state,flipped,flashChoice,copyMessage,copyFallback};$('#reset-panel').hidden=true;},
+  show(demo){state=demo;flipped=false;flashChoice=null;copyMessage='';copyFallback=false;render();},
+  onExit(){({state,flipped,flashChoice,copyMessage,copyFallback}=tourBackup);tourBackup=null;render();},
+  onSound(text,button){player.play(text,1,button);},
+  onStop(){player.stop();}
+});
 render();

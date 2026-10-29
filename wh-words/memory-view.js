@@ -1,4 +1,4 @@
-import {memoryDecks} from './memory.js?v=20261027-audio-answers-final';
+import {memoryDecks} from './memory.js?v=20261029-guided-tour';
 
 export function memoryView(kind,m,{esc,soundButton,art}){
   const list=memoryDecks[kind],isWord=kind==='words',row=m.queue[m.pos],item=row&&list.find(x=>x.id===row.id);

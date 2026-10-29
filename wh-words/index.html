@@ -7,15 +7,17 @@
   <meta name="description" content="Домашняя практика по 15 минут во вторник и среду: вопросительные слова, полезные вопросы и задания с проверкой. В четверг — занятие.">
   <title>Домашняя практика · 15 минут в день</title>
   <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./style.css?v=20261027-audio-answers-final"><link rel="stylesheet" href="./nigor-theme.css?v=20261027-audio-answers-final"><link rel="stylesheet" href="./audio-practice.css?v=20261027-audio-answers-final">
+  <link rel="stylesheet" href="./style.css?v=20261029-guided-tour"><link rel="stylesheet" href="./nigor-theme.css?v=20261029-guided-tour"><link rel="stylesheet" href="./audio-practice.css?v=20261029-guided-tour">
+  <link rel="stylesheet" href="./tour.css?v=20261029-guided-tour">
 </head>
 <body>
   <audio id="lesson-audio" preload="none"></audio>
   <a class="skip" href="#main">К заданиям</a>
-  <header class="site-header"><a href="#main" class="brand" data-nav="homework"><span class="brand-mark" aria-hidden="true">wh</span><span>Английский</span></a><span class="header-note">Вопросительные слова</span><nav class="top-nav" aria-label="Дни практики"><button type="button" data-plan>План</button><button type="button" data-day="tuesday">Вторник</button><button type="button" data-day="wednesday">Среда</button></nav></header>
+  <header class="site-header"><a href="#main" class="brand" data-nav="homework"><span class="brand-mark" aria-hidden="true">wh</span><span>Английский</span></a><span class="header-note">Вопросительные слова</span><nav class="top-nav" aria-label="Дни практики"><button type="button" data-plan>План</button><button type="button" data-day="tuesday">Вторник</button><button type="button" data-day="wednesday">Среда</button></nav><button type="button" class="tour-start" id="tour-start" data-tour-start><span aria-hidden="true">?</span>Как заниматься</button></header>
   <main id="main" tabindex="-1">
     <div class="intro"><div><p class="eyebrow">ДВА ДНЯ ПРАКТИКИ · ПО 15 МИНУТ</p><h1>Спроси — и ответь по смыслу</h1><p>Слушай, произноси, пиши. Разберись в вопросе и ответь по смыслу.</p></div><div class="completion-count"><strong id="day-completion">0 / 2</strong><span>письменные части</span></div></div>
     <nav class="tabs" aria-label="Разделы практики"><button type="button" data-nav="words" aria-current="page"><span class="tab-num">01</span><span>Слова<small>7 слов и заучивание</small></span></button><button type="button" data-nav="phrases"><span class="tab-num">02</span><span>Полезные вопросы<small>5 вопросов и ответы</small></span></button><button type="button" data-nav="homework"><span class="tab-num">03</span><span>Домашнее задание<small>План на два дня</small></span></button></nav>
+    <aside class="tour-welcome" id="tour-welcome"><div><strong>Не знаешь, куда нажимать?</strong><p>Покажу нужные кнопки прямо на экране, шаг за шагом.</p></div><button type="button" class="button" data-tour-start>Показать, как заниматься →</button></aside>
     <div id="content"></div>
     <p id="storage-message" class="storage-message">Прогресс сохраняется на этом устройстве. Можно продолжить позже.</p>
   </main>
@@ -23,7 +25,7 @@
   <div id="reset-panel" class="reset-panel" hidden><p>Очистить отметки карточек и ответы в домашнем задании на этом устройстве?</p><div class="actions"><button type="button" id="reset-confirm" class="button">Да, начать заново</button><button type="button" id="reset-cancel" class="button secondary">Оставить прогресс</button></div></div>
   <div id="speech-message" class="sr-only" role="status" aria-live="polite"></div>
   <noscript><p class="noscript">Для карточек и проверки ответов включи JavaScript в браузере.</p></noscript>
-  <script type="module" src="./app.js?v=20261027-audio-answers-final"></script>
+  <script type="module" src="./app.js?v=20261029-guided-tour"></script>
 </body>
 </html>
 

@@ -1,6 +1,6 @@
-import {exerciseModes,builtAnswer} from './exercises.js?v=20261027-audio-answers-final';
-import {words,phrases,tasks,days,gradeAnswer} from './content.js?v=20261027-audio-answers-final';
-import {restoreMemory} from './memory.js?v=20261027-audio-answers-final';
+import {exerciseModes,builtAnswer} from './exercises.js?v=20261029-guided-tour';
+import {words,phrases,tasks,days,gradeAnswer} from './content.js?v=20261029-guided-tour';
+import {restoreMemory} from './memory.js?v=20261029-guided-tour';
 const taskMap=Object.fromEntries(tasks.map(t=>[t.id,t]));
 export function makeState(){return {version:3,tab:'homework',reviewDay:'tuesday',theory:{step:0,subject:'you'},speaking:{day:'tuesday',index:0,revealed:false,done:false},oralDone:{tuesday:false,wednesday:false},memory:restoreMemory(null),decks:{words:{index:0,mode:'en',known:[]},phrases:{index:0,mode:'en',known:[]}},quiz:{day:'tuesday',started:false,queue:[...days[0].taskIds],pos:0,answers:{},result:false}};}
 export function summarizeDay(answers,dayId){const day=days.find(d=>d.id===dayId)||days[0];const rows=day.taskIds.map(id=>taskMap[id]);const done=rows.filter(t=>answers[t.id]?.correct);return {day,total:rows.length,done:done.length,first:done.filter(t=>answers[t.id]?.firstTry===true).length,repeat:rows.filter(t=>answers[t.id]?.firstTry===false),complete:done.length===rows.length};}

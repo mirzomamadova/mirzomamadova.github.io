@@ -1,4 +1,4 @@
-import {words,phrases,normalizeAnswer} from './content.js?v=20261027-audio-answers-final';
+import {words,phrases,normalizeAnswer} from './content.js?v=20261029-guided-tour';
 export const memoryDecks={words,phrases};
 const replies={
  'how-are-you':['I am okay.',"I'm okay."],
