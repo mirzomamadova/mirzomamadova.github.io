@@ -1,9 +1,11 @@
-import {makeState} from './progress.js?v=20261029-guided-tour';
-import {recordMemory} from './memory.js?v=20261029-guided-tour';
+import {makeReportText} from './report.js?v=20261029-report-errors';
+import {tasks} from './content.js?v=20261029-report-errors';
+import {makeState} from './progress.js?v=20261029-report-errors';
+import {recordMemory} from './memory.js?v=20261029-report-errors';
 
 // Read-only demonstrations use fresh state, never a student's answers.
 export const tourSteps = [
-  {screen:'plan',target:'[data-plan-day="tuesday"] [data-memory-start="words"]',title:'Начни с этой кнопки',text:'Во вторник нажми «Начать со слов», в среду — «Начать с повторения». Сейчас я покажу весь путь. Нажимай «Дальше» в белой подсказке.'},
+  {screen:'plan',target:'[data-plan-day="tuesday"] [data-memory-start="words"]',title:'Начни с этой кнопки',text:'Во вторник нажми «Начать со слов», в среду — «Начать с повторения». Сейчас я покажу весь путь. Нажимай «Дальше» в белой подсказке. В конце обязательно отправь отчёт преподавателю.'},
   {screen:'word',target:'.memory-model .audio-controls',title:'Послушай и повтори',text:'«Слушать» включает запись. «Медленно» — ту же запись медленнее. Повтори слово вслух два раза. Можно слушать сколько нужно.',sound:'What'},
   {screen:'word',target:'[data-memory-hide]',title:'Теперь спрячь образец',text:'Когда послушала и повторила, нажми эту кнопку. Английское слово исчезнет — попробуй вспомнить его сама.'},
   {screen:'recall',target:'#memory-question',title:'Скажи, потом напиши',text:'Нажми в белое поле. Переключи клавиатуру на английский и напиши слово. Затем нажми «Проверить себя» под полем. Если забыла — «Не помню — покажи образец».'},
@@ -12,10 +14,14 @@ export const tourSteps = [
   {screen:'phrase',target:'.memory-model .audio-row',title:'У вопроса есть свой ответ',text:'«Слушать» — вопрос, «Ответ» — пример ответа. Повтори обе реплики. Затем скрой образец: появятся два поля, для вопроса и ответа.',sound:'How are you?'},
   {screen:'choice',target:'.exercise-options',title:'Если даны варианты — выбери',text:'Прочитай задание и пример над ним. Нажми на один из вариантов, затем на «Проверить». Просто выбрать вариант недостаточно — нужна проверка.'},
   {screen:'order',target:'.word-bank',title:'Собери вопрос кнопками',text:'Нажимай слова в нужном порядке: они появятся в строке выше. «Убрать последнее» отменяет последний выбор. Когда вопрос собран, нажми «Проверить».'},
+  {screen:'error',target:'#answer-feedback',title:'Почему не пускает дальше?',text:'Если ответ неверный, сайт прямо пишет «Здесь ошибка» и объясняет причину. Исправь ответ и снова нажми «Проверить». После верного ответа кнопка «Дальше» станет доступна.'},
   {screen:'help',target:'.help-actions',title:'Застряла? Здесь помощь',text:'В заданиях с белым полем напиши свой ответ и нажми «Проверить». Если не получается, открой «Нужна подсказка» или «Показать ответ», затем попробуй снова.'},
   {screen:'next',target:'[data-quiz-next]',title:'Как перейти к следующему заданию',text:'После верного ответа синяя кнопка «Дальше» станет доступна. Пока ответ не проверен или есть ошибка, она бледная. После последнего задания здесь будет результат.'},
   {screen:'speaking',target:'[data-speech-reveal]',title:'В конце — скажи сама',text:'Сначала произнеси ответ вслух, затем нажми «Я сказала — сравнить с образцом». Послушай и сравни. Записывать голос не нужно: сайт не оценивает произношение.'},
-  {screen:'plan',target:'.top-nav [data-plan]',title:'Всегда можно вернуться сюда',text:'«План» возвращает к двум дням. «Как заниматься» снова откроет эти подсказки. Сейчас вернёмся туда, где ты остановилась. Твои ответы и отметки сохранены.'}
+  {screen:'report',target:'[data-report-send]',title:'Главный последний шаг — отчёт',text:'После устной минутки откроется отчёт. Нажми эту кнопку. На телефоне выбери мессенджер и ваш чат. Если открылось копирование, текст нужно вставить в чат самой.'},
+  {screen:'copied',target:'.report-instructions li:nth-child(2)',title:'Теперь открой ваш чат',text:'После копирования открой переписку с преподавателем. Удерживай поле сообщения → «Вставить». На компьютере — Ctrl + V. Затем обязательно нажми «Отправить» в чате.'},
+  {screen:'confirm',target:'[data-report-confirm]',title:'Проверь, что сообщение ушло',text:'Когда сообщение появилось в вашем чате, вернись сюда и нажми «Я отправила отчёт». Одного копирования мало: сначала нужно отправить текст преподавателю.'},
+  {screen:'plan',target:'.top-nav [data-plan]',title:'Всегда можно вернуться сюда',text:'«План» возвращает к практике. «Отчёт» открывает отправку в любой момент, даже если не всё получилось. «Как заниматься» повторяет подсказки. Сейчас вернёмся на твоё место.'}
 ];
 
 export function makeTourState(screen){
@@ -26,8 +32,13 @@ export function makeTourState(screen){
     if(screen==='checked'){s.memory.words.question='What';recordMemory(s.memory.words,'words');}
   }else if(screen==='theory'){s.tab='theory';s.theory.step=3;}
   else if(screen==='speaking'){s.tab='speaking';s.speaking.day='wednesday';}
-  else if(['choice','order','help','next'].includes(screen)){
+  else if(['report','copied','confirm'].includes(screen)){
+    s.tab='report';for(const t of tasks.filter(x=>s.quiz.queue.includes(x.id)))s.quiz.answers[t.id]={draft:t.answers[0],cup:null,tokens:t.id==='wh5'?[1,2,0]:[],correct:true,attempts:1,help:false,revealed:false,firstTry:true,feedback:'correct'};s.oralDone.tuesday=true;
+    if(screen!=='report'){s.report.stage=screen==='copied'?'copied':'shared';s.report.preparedText=makeReportText(s,'tuesday');s.report.message=screen==='copied'?'Открой ваш чат и отправь скопированный текст.':'После отправки сообщения отметь это кнопкой ниже.';}
+  }
+  else if(['choice','order','help','next','error'].includes(screen)){
     s.quiz.started=true;s.quiz.pos=screen==='choice'?0:screen==='order'?4:screen==='next'?5:6;
+    if(screen==='error')s.quiz.answers.wh7={draft:'Where she is?',cup:null,tokens:[],correct:false,attempts:1,help:false,revealed:false,firstTry:false,feedback:'wrong'};
     if(screen==='next')s.quiz.answers.wh6={draft:'I am at home.',cup:null,tokens:[],correct:true,attempts:1,help:false,revealed:false,firstTry:true,feedback:'correct'};
   }
   return s;
@@ -49,11 +60,11 @@ export function tourPlacement(rect,panel,width,height){
 }
 
 export function createGuidedTour({show,onEnter,onExit,onSound,onStop}){
-  let active=false,index=0,layer,dialog,hole,outline,title,body,count,prev,next,sound,originalScroll=0,inertNodes=[],frame=0,run=0,resizeObserver;
+  let steps=tourSteps,mode='all',active=false,index=0,layer,dialog,hole,outline,title,body,count,prev,next,sound,originalScroll=0,inertNodes=[],frame=0,run=0,resizeObserver;
   const by=s=>layer.querySelector(s);
   function position(){
     if(!active)return;
-    const target=document.querySelector(tourSteps[index].target);
+    const target=document.querySelector(steps[index].target);
     const width=document.documentElement.clientWidth,height=window.visualViewport?.height||window.innerHeight;
     layer.style.height=height+'px';
     let rect=target?.getBoundingClientRect();
@@ -70,11 +81,11 @@ export function createGuidedTour({show,onEnter,onExit,onSound,onStop}){
   }
   function requestPosition(){if(frame)cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{frame=0;position();});}
   function present(){
-    const step=tourSteps[index],last=index===tourSteps.length-1;run++;
+    const step=steps[index],last=index===steps.length-1;run++;
     onStop();show(makeTourState(step.screen));
-    count.textContent=`Шаг ${index+1} из ${tourSteps.length}`;by('progress').value=index+1;
+    count.textContent=`Шаг ${index+1} из ${steps.length}`;by('progress').value=index+1;
     title.textContent=step.title;body.textContent=step.text;prev.disabled=index===0;
-    next.textContent=last?'Вернуться к занятию':'Дальше →';sound.hidden=!step.sound;
+    next.textContent=last?(mode==='report'?'Вернуться к отчёту':'Вернуться к занятию'):'Дальше →';sound.hidden=!step.sound;
     dialog.style.visibility='hidden';const token=run;
     requestAnimationFrame(()=>{
       if(!active||token!==run)return;
@@ -102,11 +113,12 @@ export function createGuidedTour({show,onEnter,onExit,onSound,onStop}){
       else if(!e.shiftKey&&(focus===last||!dialog.contains(focus))){e.preventDefault();first.focus();}
     }
   }
-  function start(){
+  function start(requestedMode='all'){
     if(active)return;
+    mode=requestedMode;steps=mode==='report'?tourSteps.filter(s=>['report','copied','confirm'].includes(s.screen)):tourSteps;
     originalScroll=window.scrollY;active=true;index=0;onEnter();
     layer=document.createElement('div');layer.id='guided-tour';
-    layer.innerHTML=`<svg class="tour-shade" aria-hidden="true"><defs><mask id="tour-mask"><rect width="100%" height="100%" fill="white"/><rect id="tour-hole" fill="black" rx="9"/></mask></defs><rect width="100%" height="100%" fill="rgba(15,23,42,.72)" mask="url(#tour-mask)"/><rect id="tour-outline" rx="9" fill="none" stroke="white" stroke-width="3"/></svg><section class="tour-dialog" role="dialog" aria-modal="true" aria-labelledby="tour-title" aria-describedby="tour-text"><div class="tour-top"><span id="tour-count"></span><button type="button" data-tour-close aria-label="Закрыть подсказки">Закрыть ×</button></div><progress max="${tourSteps.length}" value="1" aria-label="Шаги ознакомления"></progress><div class="tour-copy"><h2 id="tour-title" tabindex="-1"></h2><p id="tour-text"></p><button type="button" class="tour-listen" data-tour-sound hidden>▶ Попробовать звук</button><p class="audio-note tour-audio-status" aria-live="polite"></p><p class="tour-safe">Это показ. Задания за тебя не выполняются.</p></div><div class="tour-actions"><button type="button" data-tour-prev>← Назад</button><button type="button" data-tour-next>Дальше →</button></div></section>`;
+    layer.innerHTML=`<svg class="tour-shade" aria-hidden="true"><defs><mask id="tour-mask"><rect width="100%" height="100%" fill="white"/><rect id="tour-hole" fill="black" rx="9"/></mask></defs><rect width="100%" height="100%" fill="rgba(15,23,42,.72)" mask="url(#tour-mask)"/><rect id="tour-outline" rx="9" fill="none" stroke="white" stroke-width="3"/></svg><section class="tour-dialog" role="dialog" aria-modal="true" aria-labelledby="tour-title" aria-describedby="tour-text"><div class="tour-top"><span id="tour-count"></span><button type="button" data-tour-close aria-label="Закрыть подсказки">Закрыть ×</button></div><progress max="${steps.length}" value="1" aria-label="Шаги ознакомления"></progress><div class="tour-copy"><h2 id="tour-title" tabindex="-1"></h2><p id="tour-text"></p><button type="button" class="tour-listen" data-tour-sound hidden>▶ Попробовать звук</button><p class="audio-note tour-audio-status" aria-live="polite"></p><p class="tour-safe">Это показ. Задания за тебя не выполняются.</p></div><div class="tour-actions"><button type="button" data-tour-prev>← Назад</button><button type="button" data-tour-next>Дальше →</button></div></section>`;
     document.body.append(layer);document.body.classList.add('tour-running');
     dialog=by('.tour-dialog');hole=by('#tour-hole');outline=by('#tour-outline');title=by('#tour-title');body=by('#tour-text');count=by('#tour-count');prev=by('[data-tour-prev]');next=by('[data-tour-next]');sound=by('[data-tour-sound]');
     inertNodes=[...document.body.children].filter(n=>n!==layer&&n.tagName!=='SCRIPT').map(n=>[n,n.inert]);for(const [node] of inertNodes)node.inert=true;
@@ -114,8 +126,8 @@ export function createGuidedTour({show,onEnter,onExit,onSound,onStop}){
       const b=e.target.closest('button');if(!b)return;
       if(b.hasAttribute('data-tour-close'))close();
       else if(b.hasAttribute('data-tour-prev')&&index>0){index--;present();}
-      else if(b.hasAttribute('data-tour-next')){if(index===tourSteps.length-1)close();else{index++;present();}}
-      else if(b.hasAttribute('data-tour-sound'))onSound(tourSteps[index].sound,b);
+      else if(b.hasAttribute('data-tour-next')){if(index===steps.length-1)close();else{index++;present();}}
+      else if(b.hasAttribute('data-tour-sound'))onSound(steps[index].sound,b);
     });
     document.addEventListener('keydown',keys,true);window.addEventListener('resize',requestPosition);window.addEventListener('scroll',requestPosition,{passive:true});window.visualViewport?.addEventListener('resize',requestPosition);
     if(typeof ResizeObserver!=='undefined'){resizeObserver=new ResizeObserver(requestPosition);resizeObserver.observe(dialog);}

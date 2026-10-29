@@ -1,4 +1,4 @@
-import {audioAssets} from './audio-map.js?v=20261029-guided-tour';
+import {audioAssets} from './audio-map.js?v=20261029-report-errors';
 export function createAudioPlayer(media,notify,mark){
  let serial=0,active=null;
  const finish=()=>{if(active){mark(active,false);active=null;}};
