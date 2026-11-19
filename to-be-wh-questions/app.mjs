@@ -1,4 +1,4 @@
-import {data,STORAGE_KEY,byId,dayById,fresh,newDraft,checkItem,reveal,finish,score,reportText,loadState} from './core.mjs';
+import {data,STORAGE_KEY,byId,dayById,fresh,newDraft,checkItem,reveal,finish,score,reportText,loadState} from './core.mjs?v=2';
 const main=document.getElementById('main');
 const preview=new URLSearchParams(location.search).get('preview')==='1',storageKey=STORAGE_KEY+(preview?'-preview':'');
 let state;try{state=loadState(localStorage.getItem(storageKey));}catch{state=fresh();}

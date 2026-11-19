@@ -19,7 +19,7 @@ export function checkItem(q,s){
  if(s.first===null){s.first=ok&&!s.helped;s.firstValue=s.value;}
  s.tries++;s.correct=ok;s.done=ok;
  let hint=q.word?'Вспомни значение слова. Если трудно, открой «Разобрать ответ». Потом слово можно повторить.':q.type==='choice'?'Прочитай русский смысл и пример сверху. Выбери другой ответ.':'Проверь: вопросительное слово, затем am / is / are, затем тот, о ком спрашиваем. I — am; he / she / it — is; you / we / they — are.';
- return {valid:true,correct:ok,message:ok?'Верно. '+q.explanation:hint};
+ return {valid:true,correct:ok,message:ok?'Верно. '+q.explanation:'Пока неверно. '+hint};
 }
 export function reveal(s){if(s.first===null)s.first=false;s.helped=true;s.revealed=true;s.done=true;}
 export const score=r=>({correct:r.details.filter(x=>x.first).length,total:r.details.length});
