@@ -131,8 +131,59 @@ function advance(){delete session().pending;session().cursor++;save();resetTask(
 function finishDay(){const s=session();const first=s.answers.filter(a=>!a.review&&!a.oral),oral=s.answers.filter(a=>a.oral);const result={finished:new Date().toISOString(),right:first.filter(x=>x.ok).length,total:first.length,repeats:s.answers.filter(a=>a.review).length,oral:oral.length,errors:s.answers.filter(a=>!a.ok&&!a.oral).map(a=>({kind:a.kind,ref:a.ref,answer:a.answer,expected:a.expected}))};person().days[activeDay]=result;delete person().sessions[activeDay];save();view='result';stopAudio();main.innerHTML=`<section class="exercise"><p class="eyebrow">ДЕНЬ ${activeDay} ЗАВЕРШЁН</p><h1>${Object.keys(person().days).length===4?'Четыре шага пройдены':'Хорошая работа на сегодня'}</h1><div class="summary"><p>Правильно с первой попытки</p><p class="big">${result.right} / ${result.total}</p><p>${result.repeats?'Заданий на повторение: '+result.repeats+'. Ты вернулась к трудным словам и вопросам.':'Все письменные задания получились с первого раза.'}</p>${oral.length?'<p class="small">Произношение проверяла сама, сравнивая с записью. Оно не входит в письменный результат.</p>':''}<p class="note">Следующий подход сделай в другой день. Перед ним попробуй назвать все семь слов и их значения без памятки.</p><div class="actions"><button class="primary" data-view="home">К плану на 4 дня</button><button data-view="report">Посмотреть результаты</button></div></div></section>`;bindCommon();nav()}
 function wordsView(){view='words';nav();main.innerHTML=`<p class="eyebrow">ПАМЯТКА И ПРОИЗНОШЕНИЕ</p><h1>Семь вопросительных слов</h1><p class="note">Слушай, смотри на написание и повторяй. Затем вернись к заданиям: там нужно будет вспомнить слово самостоятельно. How тоже входит в эту группу.</p><div class="wordref">${WORDS.map(w=>`<section class="refcard"><h2 lang="en">${w.en} <span class="pron">${w.ipa}</span></h2><p class="meaning">${w.ru}</p><p>${w.sense}</p>${audioButtons(w.id)}<p class="small" style="margin-top:14px">${w.tip}</p></section>`).join('')}</div><div class="toolsrow"><button class="primary" data-view="home">Вернуться к заданиям</button></div>`;bindCommon()}
 function guideView(){view='guide';nav();main.innerHTML=`<section class="exercise"><p class="eyebrow">ОТ СМЫСЛА К ВОПРОСУ</p><h1>Что ты хочешь узнать?</h1><p class="note">Вопросы на сайте — примеры устройства предложения. Твоя задача — выбрать слово по смыслу и построить свой вопрос.</p>${guideHTML(true)}<div class="wordref"><div class="refcard"><h3>Обычная схема</h3><p style="margin-top:12px">Вопросительное слово + am / is / are + о ком или о чём спрашиваем + остальное.</p><p class="small">Why + are + you + tired?</p></div><div class="refcard"><h3>Группа с which</h3><p style="margin-top:12px">Which pen / Which bag / Which book держим вместе.</p><p class="small">Which book + is + yours?</p></div></div><div class="toolsrow"><button class="primary" data-view="home">Вернуться к заданиям</button></div></section>`;bindCommon()}
-function reportText(){if(!store.learner)return '';const p=person();let lines=[`Английский · WH-слова · ${name()}`];for(const d of DAYS){const r=p.days[d.id];lines.push(r?`День ${d.id}: ${r.right}/${r.total} с первой попытки, повторений: ${r.repeats}${r.oral?', произношение — самопроверка':''}.`:`День ${d.id}: ${p.sessions[d.id]?'в процессе':'ещё не выполнен'}.`);if(r?.errors?.length){const unique=[...new Map(r.errors.map(e=>[e.expected,e])).values()];lines.push('Повторяли: '+unique.map(e=>e.expected).join('; ')+'.')}}lines.push('Результаты с этого устройства. Произношение автоматически не оценивалось.');return lines.join('\n')}
-function reportView(){if(!store.learner){modalProfiles();return}view='report';nav();main.innerHTML=`<section class="exercise"><p class="eyebrow">${name().toUpperCase()} · МОЯ ПРАКТИКА</p><h1>Результаты за четыре дня</h1><p class="note">Скопируй отчёт и отправь преподавателю сама. В нём отдельно отмечены первые попытки, повторения и устная самопроверка.</p><label for="report-text" class="answer-label">Отчёт</label><textarea class="report-text" id="report-text" readonly>${esc(reportText())}</textarea><div class="actions"><button class="primary" id="copy-report">Скопировать отчёт</button><button data-view="home">К заданиям</button></div><p id="copy-status" class="small" role="status" style="margin-top:12px"></p><details class="guide" style="margin-top:32px"><summary>Начать все четыре дня заново</summary><div class="guide-body"><p>Удалятся только результаты ${name()} на этом устройстве. У второй ученицы всё сохранится.</p><button id="reset-person" style="margin-top:16px">Очистить мои результаты</button></div></details></section>`;bindCommon();$('#copy-report').onclick=async()=>{try{await navigator.clipboard.writeText(reportText());$('#copy-status').textContent='Отчёт скопирован.'}catch{$('#report-text').focus();$('#report-text').select();$('#copy-status').textContent='Выделила отчёт. Скопируй его через меню устройства.'}};$('#reset-person').onclick=()=>{if(confirm('Удалить все результаты '+name()+' на этом устройстве?')){store.people[store.learner]={days:{},sessions:{},mistakes:{}};save();home()}}}
+function reportText(){
+ if(!store.learner)return '';
+ const p=person(),lines=[`Английский · WH-слова · ${name()}`];
+ for(const d of DAYS){
+  const r=p.days[d.id],ongoing=p.sessions[d.id];
+  if(r)lines.push(`День ${d.id}: ${r.right}/${r.total} с первой попытки, повторений: ${r.repeats}${r.oral?', произношение — самопроверка':''}.`);
+  else if(!ongoing)lines.push(`День ${d.id}: ещё не выполнен.`);
+  if(ongoing){
+   const answers=ongoing.answers||[],first=answers.filter(a=>!a.review&&!a.oral);
+   lines.push(`День ${d.id}${r?' (повторное прохождение)':''}: в процессе; проверено письменных заданий: ${first.length}, правильно с первой попытки: ${first.filter(a=>a.ok).length}.`);
+  }
+  const errors=[...(r?.errors||[]),...(ongoing?.answers||[]).filter(a=>!a.ok&&!a.oral)];
+  if(errors.length){const unique=[...new Map(errors.map(e=>[e.expected,e])).values()];lines.push('Повторяли: '+unique.map(e=>e.expected).join('; ')+'.')}
+ }
+ lines.push('Результаты с этого устройства. Произношение автоматически не оценивалось.');return lines.join('\n');
+}
+function reportStatus(message){const el=$('#copy-status');if(el)el.textContent=message}
+function selectReportText(){const el=$('#report-text');if(!el)return;el.focus();el.select();el.setSelectionRange(0,el.value.length)}
+async function copyReport(){
+ const text=reportText();
+ try{if(!navigator.clipboard?.writeText)throw new Error('Clipboard unavailable');await navigator.clipboard.writeText(text);reportStatus('Отчёт скопирован. Открой нужный чат и вставь текст сообщения.');return true}
+ catch{selectReportText();try{if(document.execCommand('copy')){reportStatus('Отчёт скопирован. Открой нужный чат и вставь текст сообщения.');return true}}catch{}reportStatus('Текст выделен. Нажми на него и выбери «Копировать», затем вставь в нужный чат.');return false}
+}
+async function shareReport(){
+ const text=reportText(),button=$('#share-report');
+ if(button.disabled)return;
+ button.disabled=true;
+ try{
+  if(typeof navigator.share!=='function'){
+   const copied=await copyReport();
+   if(copied)reportStatus('Меню отправки здесь недоступно. Отчёт скопирован — вставь его в нужный чат.');
+   return;
+  }
+  await navigator.share({title:'Отчёт по английскому — '+name(),text});
+  reportStatus('Отчёт передан в выбранное приложение.');
+ }catch(error){
+  if(error?.name==='AbortError')reportStatus('Отправка отменена. Можно нажать «Отправить отчёт» ещё раз.');
+  else reportStatus('Не удалось открыть отправку. Нажми «Скопировать» или «Сохранить файлом» и отправь отчёт из своего чата.');
+ }finally{button.disabled=false}
+}
+function downloadReport(){
+ try{
+  const blob=new Blob(['\uFEFF'+reportText()],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=`WH_report_${store.learner}.txt`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+  reportStatus('Файл отчёта подготовлен. Открой загрузки и прикрепи его в нужном чате.');
+ }catch{reportStatus('Не удалось сохранить файл. Используй кнопку «Скопировать».')}
+}
+function reportView(){
+ if(!store.learner){modalProfiles();return}view='report';nav();
+ main.innerHTML=`<section class="exercise"><p class="eyebrow">${name().toUpperCase()} · МОЯ ПРАКТИКА</p><h1>Результаты за четыре дня</h1><p class="note">Нажми «Отправить отчёт», выбери приложение и нужный чат. Можно отправить и промежуточный результат.</p><label for="report-text" class="answer-label">Отчёт</label><textarea class="report-text" id="report-text" readonly>${esc(reportText())}</textarea><div class="actions"><button type="button" class="primary" id="share-report">Отправить отчёт</button><button type="button" id="copy-report">Скопировать</button><button type="button" id="download-report">Сохранить файлом</button><button type="button" data-view="home">К заданиям</button></div><p id="copy-status" class="small" role="status" aria-live="polite" style="margin-top:12px"></p><details class="guide" style="margin-top:32px"><summary>Начать все четыре дня заново</summary><div class="guide-body"><p>Удалятся только результаты ${name()} на этом устройстве. У второй ученицы всё сохранится.</p><button id="reset-person" style="margin-top:16px">Очистить мои результаты</button></div></details></section>`;
+ bindCommon();$('#share-report').onclick=shareReport;$('#copy-report').onclick=copyReport;$('#download-report').onclick=downloadReport;
+ $('#reset-person').onclick=()=>{if(confirm('Удалить все результаты '+name()+' на этом устройстве?')){store.people[store.learner]={days:{},sessions:{},mistakes:{}};save();home()}};
+}
 function bindSounds(){document.querySelectorAll('[data-sound]').forEach(b=>b.onclick=()=>playWord(b.dataset.sound,Number(b.dataset.rate||1)))}
 function go(v){if(v==='home')home();if(v==='words')wordsView();if(v==='guide')guideView();if(v==='report')reportView()}
 function bindCommon(){document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>go(b.dataset.view));document.querySelectorAll('[data-day]').forEach(b=>b.onclick=()=>startDay(b.dataset.day));document.querySelectorAll('[data-profile]').forEach(b=>b.onclick=()=>chooseProfile(b.dataset.profile));document.querySelectorAll('[data-choice]').forEach(b=>b.onclick=()=>{selected=b.dataset.choice;document.querySelectorAll('[data-choice]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))});document.querySelectorAll('[data-guide]').forEach(b=>b.onclick=()=>{guideTab=b.dataset.guide;document.querySelectorAll('[data-guide]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));$('#guide-example').innerHTML=guideExample()});bindSounds()}
